@@ -13,7 +13,7 @@ class MainPage(webapp.RequestHandler):
         self.response.out.write(template.render("welcome.html", {}))
 
 class Movies(webapp.RequestHandler):
-    def post(self):
+    def get(self):
         city = self.request.get('city')
         self.response.out.write(template.render("movies.html", { 'city': city, 'movies': showtimes.find(city) }))
 
