@@ -1,0 +1,51 @@
+body {
+	background: black;
+	color: #aaa;
+	font-family: GraublauWeb, Lucida Sans, Luxi Sans, Tahoma, Helvetica, sans-serif;
+}
+
+h1 {
+	font-size: 8.8em;
+	font-weight: lighter;
+	margin-bottom: 0.38em;
+	text-align: center;
+	margin-bottom: -0.3em;
+	margin-top: 0;
+}
+
+h2 {
+	color: white;
+	font-size: 1.42em;
+	margin-bottom: 2em;
+	magin-top: 0em;
+	text-align: center;
+}
+
+.verb {
+	color: white;
+	font-weight: bold;
+}
+
+a {
+    color: inherit;
+    text-decoration: inherit;
+    border-bottom: thin dotted #aaa;
+}
+
+#blurb {
+    width: 25em;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 5ex;
+}
+
+#forms {
+    width: 25em;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+input {
+    color: inherit;
+    background-color: black;
+}
