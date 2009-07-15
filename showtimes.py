@@ -36,26 +36,36 @@ def get_and_decode(url):
     return decode_htmlentities(unicode(urllib.urlopen(url).read(), "latin1"))
 
 def find(city):
-    url = BASE + urllib.quote(city.encode("utf-8"))
-    info("fetching " + url)
-    showtimes_page = get_and_decode(url)
+    url = baseurl = BASE + urllib.quote(city.encode("utf-8"))
 
     movies = [ ]
-    it = TITLE_RE.finditer(showtimes_page)
-    for i in it:
-        mid = i.group(1)
-        title = i.group(2)
-        rest = i.group(3)
+    start = 0
+    while True:
+        info("fetching " + url)
+        showtimes_page = get_and_decode(url)
 
-        jt = CINEMA_RE.finditer(rest)
-        cinemas = []
-        for j in jt:
-            tid = j.group(1)
-            cinema = j.group(2)
-            times = j.group(3).split('&nbsp; ')
-            cinemas.append({'link': cinemalink(tid), 'name': cinema, 'times': times})
+        it = TITLE_RE.finditer(showtimes_page)
+        for i in it:
+            mid = i.group(1)
+            title = i.group(2)
+            rest = i.group(3)
 
-        movies.append({'link': movielink(city, mid), 'title': title, 'cinemas': cinemas})
+            jt = CINEMA_RE.finditer(rest)
+            cinemas = []
+            for j in jt:
+                tid = j.group(1)
+                cinema = j.group(2)
+                times = j.group(3).split('&nbsp; ')
+                cinemas.append({'link': cinemalink(tid), 'name': cinema, 'times': times})
+
+            movies.append({'link': movielink(city, mid), 'title': title, 'cinemas': cinemas})
+
+        if NEXT_RE.search(showtimes_page):
+            start = start + 10
+            url = baseurl + "&start=" + str(start)
+        else:
+            break
+
 
     debug("movies: " + unicode(movies))
 
