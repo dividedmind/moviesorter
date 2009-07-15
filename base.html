@@ -1,0 +1,22 @@
+<html>
+    <head>
+        <title>Movie Sorter</title>
+        <link rel="stylesheet" type="text/css" href="stylesheets/main.css"/>
+    </head>
+    <body>
+    <h1>movie<span class="verb">sorter</span></h1>
+    <h2>choose without choosing</h2>
+
+    {% block blurb %}
+    {% endblock %}
+
+    <div id="forms">
+        <form action="/movies" method="post">
+            City: <input type="text" name="city" value="{{ city }}"/>
+            <input type="submit" value="Show me movies!"/>
+        </form>
+    </div>
+
+    {% block content %}
+    {% endblock %}
+</html>

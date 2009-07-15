@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block contents %}
+<table>
+    <tr>
+        <th>Title</th>
+        <th>Showtimes</th>
+    </tr>
+    {% for movie in movies %}
+        <tr>
+            <td><a href="{{ movie.link }}">{{ movie.title }}</a></td>
+            <td>
+                {% for showtime in movie.showtimes %}
+                    {{ showtime.time }}
+                {% endfor %}
+            </td>
+        </tr>
+    {% endfor %}
+</table>
+{% endblock %}

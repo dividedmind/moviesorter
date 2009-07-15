@@ -4,12 +4,22 @@ from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
+from showtimes import *
+
 class MainPage(webapp.RequestHandler):
     def get(self):
-        self.response.out.write(template.render("moviesorter.html", {}))
+        self.response.out.write(template.render("welcome.html", {}))
+
+class Movies(webapp.RequestHandler):
+    def post(self):
+        city = self.request.get('city')
+        self.response.out.write(template.render("movies.html", { 'city': city }))
 
 application = webapp.WSGIApplication(
-                                     [('/', MainPage)],
+                                     [
+                                        ('/', MainPage),
+                                        ('/movies', Movies)
+                                     ],
                                      debug=True)
 
 def main():
