@@ -29,8 +29,8 @@ def decode_htmlentities(string):
 def movielink(city, mid):
     return "http://www.google.com/movies?hl=en&near=" + urllib.quote(city.encode('utf-8')) + "&mid=" + mid
 
-def cinemalink(tid):
-    return "/movies?hl=en&tid=" + tid
+def cinemalink(city, tid):
+    return "http://www.google.com/movies?hl=en&near=" + urllib.quote(city.encode('utf-8')) + "&tid=" + tid
 
 def get_and_decode(url):
     return decode_htmlentities(unicode(urllib.urlopen(url).read(), "latin1"))
@@ -56,7 +56,7 @@ def find(city):
                 tid = j.group(1)
                 cinema = j.group(2)
                 times = j.group(3).split('&nbsp; ')
-                cinemas.append({'link': cinemalink(tid), 'name': cinema, 'times': times})
+                cinemas.append({'link': cinemalink(city, tid), 'name': cinema, 'times': times})
 
             movies.append({'link': movielink(city, mid), 'title': title, 'cinemas': cinemas})
 
