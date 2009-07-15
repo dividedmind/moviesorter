@@ -4,7 +4,7 @@ from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
-from showtimes import *
+import showtimes
 
 class MainPage(webapp.RequestHandler):
     def get(self):
@@ -13,7 +13,7 @@ class MainPage(webapp.RequestHandler):
 class Movies(webapp.RequestHandler):
     def post(self):
         city = self.request.get('city')
-        self.response.out.write(template.render("movies.html", { 'city': city }))
+        self.response.out.write(template.render("movies.html", { 'city': city, 'movies': showtimes.find(city) }))
 
 application = webapp.WSGIApplication(
                                      [
