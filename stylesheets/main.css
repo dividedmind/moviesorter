@@ -29,7 +29,7 @@ h2 {
 a {
     color: inherit;
     text-decoration: inherit;
-    border-bottom: thin dotted #aaa;
+    border-bottom: thin dotted #333;
 }
 
 #blurb {
@@ -48,4 +48,18 @@ a {
 input {
     color: inherit;
     background-color: black;
+    font: inherit;
+}
+
+th {
+    border-bottom: #aaa solid thin;
+}
+
+td {
+    border-bottom: #555 solid thin;
+}
+
+table {
+    margin-left: auto;
+    margin-right: auto;
 }
