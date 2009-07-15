@@ -19,7 +19,7 @@ class Movies(webapp.RequestHandler):
         city = self.request.get('city')
         real_city = showtimes.place(city)
         if real_city:
-            self.redirect(self.request.path + "?" + urlencode({'city': real_city}), permanent = True)
+            self.redirect(self.request.path + "?" + urlencode({'city': real_city.encode('utf-8')}), permanent = True)
         else:
             self.response.out.write(template.render("movies.html", { 'city': city, 'movies': showtimes.find(city) }))
 

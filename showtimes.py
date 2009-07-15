@@ -11,16 +11,34 @@ CINEMA_RE = re.compile(r'tid=([0-9a-f]*)"><b dir=ltr>(.*?)</b></a><br>.*?<br>(.*
 NEXT_RE = re.compile(r'<br>Next</a>')
 PLACE_RE = re.compile(r'<b>Showtimes for (.*?)</b>')
 
+def substitute_entity(match):
+    ent = match.group(3)
+
+    if match.group(1) == "#":
+        if match.group(2) == '':
+            return unichr(int(ent))
+        elif match.group(2) == 'x':
+            return unichr(int('0x'+ent, 16))
+    else:
+        return match.group()
+
+def decode_htmlentities(string):
+    entity_re = re.compile(r'&(#?)(x?)(\w+);')
+    return entity_re.subn(substitute_entity, string)[0]
+
 def movielink(city, mid):
-    return "http://www.google.com/movies?hl=en&near=" + urllib.quote(city) + "&mid=" + mid
+    return "http://www.google.com/movies?hl=en&near=" + urllib.quote(city.encode('utf-8')) + "&mid=" + mid
 
 def cinemalink(tid):
     return "/movies?hl=en&tid=" + tid
 
+def get_and_decode(url):
+    return decode_htmlentities(unicode(urllib.urlopen(url).read(), "latin1"))
+
 def find(city):
-    url = BASE + urllib.quote(city)
+    url = BASE + urllib.quote(city.encode("utf-8"))
     info("fetching " + url)
-    showtimes_page = urllib.urlopen(url).read()
+    showtimes_page = get_and_decode(url)
 
     movies = [ ]
     it = TITLE_RE.finditer(showtimes_page)
@@ -44,12 +62,13 @@ def find(city):
     return movies
 
 def get_place(typed):
+    typed = typed.encode("utf-8")
     reloc = memcache.get(typed, namespace = "places")
     if reloc:
         return reloc
 
     url = BASE + urllib.quote(typed)
-    showtimes_page = urllib.urlopen(url).read()
+    showtimes_page = get_and_decode(url)
     real = PLACE_RE.search(showtimes_page).group(1)
     memcache.set(typed, real, namespace = "places")
     return real
