@@ -10,8 +10,10 @@
         <tr>
             <td><a href="{{ movie.link }}">{{ movie.title }}</a></td>
             <td>
-                {% for showtime in movie.showtimes %}
-                    {{ showtime.time }}
+                {% for cinema in movie.cinemas %}
+                    <a href="{{ cinema.link }}" title="{{ cinema.name }}">{{ cinema.name|abbrev }}</a>:
+                    {% for time in cinema.times %}{{ time }} {% endfor %}
+                    {% if not forloop.last %}<br/>{% endif %}
                 {% endfor %}
             </td>
         </tr>

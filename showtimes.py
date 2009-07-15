@@ -10,6 +10,10 @@ CINEMA_RE = re.compile(r'tid=([0-9a-f]*)"><b dir=ltr>(.*?)</b></a><br>.*?<br>(.*
 def movielink(city, mid):
     return "http://www.google.com/movies?hl=en&near=" + urllib.quote(city) + "&mid=" + mid
 
+def cinemalink(tid):
+    return "/movies?hl=en&tid=" + tid
+
+
 def find(city):
     url = BASE + urllib.quote(city)
     info("fetching " + url)
@@ -23,15 +27,14 @@ def find(city):
         rest = i.group(3)
 
         jt = CINEMA_RE.finditer(rest)
-        showtimes = []
+        cinemas = []
         for j in jt:
             tid = j.group(1)
             cinema = j.group(2)
             times = j.group(3).split('&nbsp; ')
-            for t in times:
-                showtimes.append({'time': t})
+            cinemas.append({'link': cinemalink(tid), 'name': cinema, 'times': times})
 
-        movies.append({'link': movielink(city, mid), 'title': title, 'showtimes': showtimes})
+        movies.append({'link': movielink(city, mid), 'title': title, 'cinemas': cinemas})
 
     debug("movies: " + unicode(movies))
 

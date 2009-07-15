@@ -6,6 +6,8 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 
 import showtimes
 
+template.register_template_library('abbrev')
+
 class MainPage(webapp.RequestHandler):
     def get(self):
         self.response.out.write(template.render("welcome.html", {}))
