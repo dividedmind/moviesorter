@@ -70,3 +70,7 @@ table {
     border-top: #666 solid thin;
     text-align: right;
 }
+
+.imdb {
+    text-align: center;
+}
