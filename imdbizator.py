@@ -24,9 +24,9 @@ def fetch_info(movieID):
 @gaecache()
 def best_guess(title):
     title = massage_title(title)
-    im = ia.search_movie(title)
+    im = ia._search_movie(title, results = 1)
     if im:
-        return im[0].movieID
+        return im[0][0]
     else:
         return None
 
