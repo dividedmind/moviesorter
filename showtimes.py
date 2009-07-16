@@ -72,7 +72,7 @@ def do_find(city):
 
 def nearest_midnight(time):
     next_day = time + timedelta(days=1)
-    next_day = next_day.replace(hour = 0).replace(minute = 0)
+    next_day = next_day.replace(hour = 0).replace(minute = 0).replace(second = 0)
     return next_day
 
 def find(city):
