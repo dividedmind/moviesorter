@@ -2,7 +2,7 @@ function makeImdbForm(mid, imdb)
 {
     return(
         '<div class="imdb_form" id="imdbform_' + mid + '">' +
-            'Confirm or change address of IMDb page:<br/>' +
+            'Confirm or suggest address of another IMDb page:<br/>' +
             '<input name="imdb" type="text" value="' + imdb + '"/> <input type="submit" value="Ok"/>' +
         '</div>');
 }
@@ -19,8 +19,15 @@ guessed.each(function(i) {
     this.imdb = imdbtd.find("a").attr("href");
 
     $(this).click(function() {
-        td = $(this).parents("td");
-        td.append(makeImdbForm(this.mid, this.imdb));
-        td.find(".imdb_form").hide().fadeIn();
+        guessed = this;
+        if (this.imdb_form) {
+            $(this.imdb_form).fadeOut("slow", function() { $(this).remove(); guessed.imdb_form = null; });
+        } else {
+            td = $(this).parents("td");
+            td.append(makeImdbForm(this.mid, this.imdb));
+            td.find(".imdb_form").hide().fadeIn("slow");
+            this.imdb_form = td.find(".imdb_form");
+        }
+        return false;
     });
 });
