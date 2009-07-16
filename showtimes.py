@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 
-import urllib, re
+import urllib, re, time
 from logging import info, debug
+from datetime import datetime, timedelta
 
 from google.appengine.api import memcache
+import geonames, pytz
 
 BASE = 'http://www.google.com/movies?hl=en&sort=3&near='
 TITLE_RE = re.compile(r'mid=([^"]*?)"><b dir=ltr>(.*?)</b>(.*?)<tr><td>&nbsp;</td></tr>')
@@ -35,7 +37,7 @@ def cinemalink(city, tid):
 def get_and_decode(url):
     return decode_htmlentities(unicode(urllib.urlopen(url).read(), "latin1"))
 
-def find(city):
+def do_find(city):
     url = baseurl = BASE + urllib.quote(city.encode("utf-8"))
 
     movies = [ ]
@@ -67,6 +69,31 @@ def find(city):
             break
 
     return movies
+
+def nearest_midnight(time):
+    next_day = time + timedelta(days=1)
+    next_day = next_day.replace(hour = 0).replace(minute = 0)
+    return next_day
+
+def find(city):
+    city_enc = city.encode('utf-8')
+    result = memcache.get(city_enc, namespace = "showtimes")
+    if not result:
+        result = do_find(city)
+        tz = geonames.timezone(city)
+        now = pytz.utc.localize(datetime.utcnow())
+        midnight = cache_timeout = nearest_midnight(now)
+        if tz:
+            now = now.astimezone(tz)
+            midnight = nearest_midnight(now)
+            cache_timeout = midnight.astimezone(pytz.utc)
+
+        cache_timeout_epoch = time.mktime(cache_timeout.timetuple())
+        debug("cache for " + city + " will expire at " + midnight.ctime() + " local, which is " + cache_timeout.ctime() + " UTC / epoch = " + str(cache_timeout_epoch))
+
+        memcache.set(city_enc, result, cache_timeout_epoch, namespace = "showtimes")
+
+    return result
 
 def get_place(typed):
     typed = typed.encode("utf-8")

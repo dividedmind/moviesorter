@@ -53,7 +53,7 @@ class gaecache(object):
     memoize decorator to use memcache with a timeout and an optional key.
     if no key is given, the func_name, args, kwargs are used to create a key.
     """
-    def __init__(self, time=3600, key=None):
+    def __init__(self, time=0, key=None):
         self.time = time
         self.key  = key
 
