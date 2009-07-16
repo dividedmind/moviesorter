@@ -4,6 +4,7 @@ from urllib import urlencode
 from logging import info, debug
 from datetime import datetime
 
+from google.appengine.api import users
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
@@ -14,11 +15,21 @@ from imdbizator import imdbize
 
 template.register_template_library('abbrev')
 
-class MainPage(webapp.RequestHandler):
-    def get(self):
-        self.response.out.write(template.render("welcome.html", {}))
+class RequestHandler(webapp.RequestHandler):
+    def render(self, templ, arguments):
+        user = users.get_current_user()
+        arguments['user' ] = user
+        if user:
+            arguments['logout'] = users.create_logout_url(self.request.url)
+        else:
+            arguments['login'] = users.create_login_url(self.request.url)
+        self.response.out.write(template.render(templ, arguments))
 
-class Movies(webapp.RequestHandler):
+class MainPage(RequestHandler):
+    def get(self):
+        self.render("welcome.html", {})
+
+class Movies(RequestHandler):
     def get(self):
         city = self.request.get('city')
         real_city = showtimes.place(city)
@@ -29,7 +40,7 @@ class Movies(webapp.RequestHandler):
             if tz:
                 debug("timezone for " + city + ": "  + unicode(tz) + ", current time:" + unicode(tz.localize(datetime.utcnow())))
             sts = imdbize(showtimes.find(city))
-            self.response.out.write(template.render("movies.html", { 'city': city, 'movies': sts }))
+            self.render("movies.html", { 'city': city, 'movies': sts })
 
 class ImdbSuggest(webapp.RequestHandler):
     def post(self):

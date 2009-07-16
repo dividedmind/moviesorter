@@ -124,13 +124,9 @@ class Vote(db.Model):
 
         if users.is_current_user_admin():
             info("current user is admin, saving authoritative mapping " + mid + "->" + imdbid)
-            v = Vote.get_or_insert("admin:mid:" + mid)
+            v = Vote.get_or_insert("admin:mid:" + mid, imdb = imdbid)
             v.imdb = imdbid
             v.put()
-            vs = Votes.get_by_mid(mid)
-            if vs:
-                vs.delete()
-            return
 
         db.run_in_transaction(Vote.tally_vote, mid, imdbid)
 
@@ -193,7 +189,7 @@ def imdbid_for_movie(movie):
         returns [authoritative, imdbid], where authoritative is false iff the match was guessed
 
         logic:
-        - if user is logged in and has voted, return their voted
+        - if user is logged in and has voted, return their vote
         - else if admin has voted, return admin vote
         - else return best vote
         - if no votes, return best guess
@@ -202,20 +198,21 @@ def imdbid_for_movie(movie):
     debug("searching for votes on " + mid)
     title = movie['title']
     votes = Votes.get_by_mid(mid)
-    if not votes:
-        vote = Vote.get_admin_vote(mid)
-        if vote:
-            return [True, str(vote.imdb)]
-        debug("no votes, returning best guess for " + title)
-        return [False, str(best_guess(movie['title']))]
-    
+    admin_vote = Vote.get_admin_vote(mid)
+    if votes:
+        their_vote = Vote.get_user_vote(votes)
+        if their_vote:
+            debug("user has voted for " + title + ", returning their vote")
+            return [True, str(their_vote.imdb)]
+    if admin_vote:
+        debug("returning admin vote")
+        return [True, str(admin_vote.imdb)]
+    if votes:
+        debug("user has not voted or is not logged in, returning best vote for " + title)
+        return [True, str(votes.imdbs[0])]
 
-    their_vote = Vote.get_user_vote(votes)
-    if their_vote:
-        debug("user has voted for " + title + ", returning their vote")
-        return [True, str(their_vote.imdb)]
-    debug("user has not voted or is not logged in, returning best vote for " + title)
-    return [True, str(votes.imdbs[0])]
+    debug("trying to guess")
+    return [False, str(best_guess(title))]
 
 def vote(mid, imdb):
     Vote.register(mid, imdb)
