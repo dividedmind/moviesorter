@@ -46,12 +46,16 @@ def mid_valid(mid):
 class Vote(db.Model):
     imdb = db.StringProperty(required = True)
 
-    def __init__(self, votes, imdbid):
-        key_name = "anonymous"
-        user = users.get_current_user()
-        if user:
-            key_name = "uid:" + user.user_id()
-        return db.Model.__init__(self, parent = votes, key_name = key_name, imdb = imdbid)
+    def __init__(self, *args, **kargs):
+        if len(args) == 2 and len(kargs) == 0:
+            votes, imdbid = args
+            key_name = "anonymous"
+            user = users.get_current_user()
+            if user:
+                key_name = "uid:" + user.user_id()
+            db.Model.__init__(self, parent = votes, key_name = key_name, imdb = imdbid)
+        else:
+            return db.Model.__init__(self, *args, **kargs)
 
     @staticmethod
     def get_user_vote(votes):
@@ -91,7 +95,7 @@ class Vote(db.Model):
         votes = Votes.get_by_mid(mid)
         if not votes:
             votes = Votes(mid)
-        vote = Vote.get_user_vote(votes)
+        vote = Vote.get_anonymous_or_user_vote(votes)
         if vote:
             votes.subtract(imdbid)
         else:
