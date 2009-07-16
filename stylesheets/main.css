@@ -74,3 +74,23 @@ table {
 .imdb {
     text-align: center;
 }
+
+.real_title {
+    font-size: 0.9em;
+    color: #222;
+}
+
+td:hover .real_title {
+    color: #999;
+}
+
+.title {
+    font-style: oblique;
+}
+
+.imdb_guessed {
+    font-size: 0.9em;
+    position: relative;
+    bottom: 0.2em;
+    border: bottom dotted thin #222;
+}
