@@ -30,7 +30,7 @@ class MainPage(RequestHandler):
         self.render("welcome.html", {})
 
 def sort_by_imdb(movies):
-    return sorted(movies, key = lambda m: 'imdb' in m and m['imdb']['rating'] or 0.0, reverse = True)
+    return sorted(movies, key = lambda m: 'imdb' in m and 'rating' in m['imdb'] and m['imdb']['rating'] or 0.0, reverse = True)
 
 class Movies(RequestHandler):
     def get(self):

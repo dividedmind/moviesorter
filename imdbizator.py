@@ -10,7 +10,7 @@ from imdb import IMDb
 
 from memoize import gaecache
 
-ia = IMDb()
+ia = IMDb(accessSystem = 'mobile')
 
 def massage_title(original_title):
     # hacks, heuristics &c go here
@@ -18,8 +18,7 @@ def massage_title(original_title):
 
 @gaecache()
 def fetch_info(movieID):
-    im = ia.get_movie(movieID)
-    ia.update(im)
+    im = ia.get_movie(movieID, info = 'main')
     return im
 
 @gaecache()

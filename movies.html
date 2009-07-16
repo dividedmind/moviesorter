@@ -10,7 +10,7 @@
     {% for movie in movies %}
         <tr>
             <td><a href="{{ movie.link }}" class="title mid">{{ movie.title }}</a><br/><span class="real_title">
-                (Full title: <span class="title">{{ movie.imdb.title }}</span>
+                (Full title: <span class="imdb title">{{ movie.imdb.title }}</span>
                 {% if not movie.imdb_confirmed %}
                     <a href="#" class="imdb_status" title="This full title match has not been confirmed and may not be right.">[☆]</a>{% else %}
                     <a href="#" class="imdb_status" title="This full title match has been confirmed.">[★]</a>{% endif %})</span></td>
