@@ -12,6 +12,7 @@ TITLE_RE = re.compile(r'mid=([^"]*?)"><b dir=ltr>(.*?)</b>(.*?)<tr><td>&nbsp;</t
 CINEMA_RE = re.compile(r'tid=([0-9a-f]*)"><b dir=ltr>(.*?)</b></a><br>.*?<br>(.*?)</font></td>')
 NEXT_RE = re.compile(r'<br>Next</a>')
 PLACE_RE = re.compile(r'<b>Showtimes for (.*?)</b>')
+NO_SHOWTIMES = 'No showtimes were found on'
 
 def substitute_entity(match):
     ent = match.group(3)
@@ -28,11 +29,11 @@ def decode_htmlentities(string):
     entity_re = re.compile(r'&(#?)(x?)(\w+);')
     return entity_re.subn(substitute_entity, string)[0]
 
-def movielink(city, mid):
-    return "http://www.google.com/movies?hl=en&near=" + urllib.quote(city.encode('utf-8')) + "&mid=" + mid
+def movielink(baseurl, mid):
+    return baseurl + "&mid=" + mid
 
-def cinemalink(city, tid):
-    return "http://www.google.com/movies?hl=en&near=" + urllib.quote(city.encode('utf-8')) + "&tid=" + tid
+def cinemalink(baseurl, tid):
+    return baseurl + "&tid=" + tid
 
 def get_and_decode(url):
     return decode_htmlentities(unicode(urllib.urlopen(url).read(), "latin1"))
@@ -42,9 +43,20 @@ def do_find(city):
 
     movies = [ ]
     start = 0
+    tomorrows = False
     while True:
         info("fetching " + url)
         showtimes_page = get_and_decode(url)
+        if start == 0 and not tomorrows:
+            # if no showtimes for today, try tomorrow's
+            try:
+                foo = showtimes_page.index(NO_SHOWTIMES)
+                info("No showtimes for today for " + city + ", trying tomorrow")
+                url = baseurl = baseurl + "&date=1"
+                tomorrows = True
+                continue
+            except:
+                pass
 
         it = TITLE_RE.finditer(showtimes_page)
         for i in it:
@@ -58,9 +70,9 @@ def do_find(city):
                 tid = j.group(1)
                 cinema = j.group(2)
                 times = j.group(3).split('&nbsp; ')
-                cinemas.append({'link': cinemalink(city, tid), 'name': cinema, 'times': times})
+                cinemas.append({'link': cinemalink(baseurl, tid), 'name': cinema, 'times': times})
 
-            movies.append({'mid': mid, 'link': movielink(city, mid), 'title': title, 'cinemas': cinemas})
+            movies.append({'mid': mid, 'link': movielink(baseurl, mid), 'title': title, 'cinemas': cinemas})
 
         break # for debugging, don't fetch half the internet, ok
         if NEXT_RE.search(showtimes_page):
