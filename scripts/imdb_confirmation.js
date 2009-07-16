@@ -18,11 +18,9 @@ function setupImdbFormCallbacks(the_form, mid, closeCB, guessed)
     });
 }
 
-guessed = $(".imdb_status");
-title = guessed.attr("title");
-guessed.attr("title", title + " Please click here to suggest another one or confirm.");
-
-guessed.each(function(i) {
+$(".imdb_status").each(function(i) {
+    title = $(this).attr("title");
+    $(this).attr("title", title + " Please click here to suggest another one or confirm.");
     td = $(this).parents("td");
     midref = td.find(".mid").attr("href");
     this.mid = midref.replace(/.*mid=(.*)/, '$1');

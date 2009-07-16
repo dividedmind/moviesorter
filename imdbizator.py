@@ -136,10 +136,15 @@ class Votes(db.Model):
 
     @staticmethod
     def get_by_mid(mid):
-        return Votes.get_by_key_name("mid:" + mid)
+        kname = "mid:" + mid
+        debug("getting votes by key name \"" + kname + "\"")
+        return Votes.get_by_key_name(kname)
 
-    def __init__(self, mid):
-        return db.Model.__init__(self, key_name = "mid:" + mid)
+    def __init__(self, *args, **kargs):
+        if len(args) == 1 and len(kargs) == 0:
+            return db.Model.__init__(self, key_name = "mid:" + args[0])
+        else:
+            return db.Model.__init__(self, *args, **kargs)
 
     def add(self, imdbid):
         try:
@@ -190,22 +195,23 @@ def imdbid_for_movie(movie):
         - if no votes, return best guess
     """
     mid = movie['mid']
+    debug("searching for votes on " + mid)
     title = movie['title']
-    votes = Votes.get_by_mid("mid:" + mid)
-    if votes:
-        their_vote = Vote.get_user_vote(votes)
-        if their_vote:
-            debug("user has voted for " + title + ", returning their vote")
-            return [True, their_vote.imdb]
-    vote = Vote.get_admin_vote(mid)
-    if vote:
-        return [True, vote.imdb]
-    if votes:
-        debug("user has not voted or is not logged in, returning best vote for " + title)
-        return [True, votes.imdbs[0]]
-    else:
+    votes = Votes.get_by_mid(mid)
+    if not votes:
+        vote = Vote.get_admin_vote(mid)
+        if vote:
+            return [True, str(vote.imdb)]
         debug("no votes, returning best guess for " + title)
-        return [False, best_guess(movie['title'])]
+        return [False, str(best_guess(movie['title']))]
+    
+
+    their_vote = Vote.get_user_vote(votes)
+    if their_vote:
+        debug("user has voted for " + title + ", returning their vote")
+        return [True, str(their_vote.imdb)]
+    debug("user has not voted or is not logged in, returning best vote for " + title)
+    return [True, str(votes.imdbs[0])]
 
 def vote(mid, imdb):
     Vote.register(mid, imdb)
