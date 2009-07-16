@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 
 from urllib import urlencode
+from logging import info, debug
+from datetime import datetime
 
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
-import showtimes
+import showtimes, geonames
 
 template.register_template_library('abbrev')
 
@@ -21,6 +23,9 @@ class Movies(webapp.RequestHandler):
         if real_city:
             self.redirect(self.request.path + "?" + urlencode({'city': real_city.encode('utf-8')}), permanent = True)
         else:
+            tz = geonames.timezone(city)
+            if tz:
+                debug("timezone for " + city + ": "  + unicode(tz) + ", current time:" + unicode(tz.localize(datetime.utcnow())))
             self.response.out.write(template.render("movies.html", { 'city': city, 'movies': showtimes.find(city) }))
 
 application = webapp.WSGIApplication(

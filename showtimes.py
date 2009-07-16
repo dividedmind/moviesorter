@@ -66,9 +66,6 @@ def find(city):
         else:
             break
 
-
-    debug("movies: " + unicode(movies))
-
     return movies
 
 def get_place(typed):
