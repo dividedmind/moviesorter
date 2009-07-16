@@ -7,6 +7,17 @@ function makeImdbForm(mid, imdb)
         '</div>');
 }
 
+function setupImdbFormCallbacks(the_form, mid, closeCB, guessed)
+{
+    imdb_input = the_form.find('input[type=text]');
+    the_form.find('input[type=submit]').click(function() {
+        imdb = imdb_input.val();
+        $.post("/imdb_suggest", { mid: mid, imdb: imdb });
+        the_form.html("Thank you!");
+        setTimeout(function() { closeCB(); guessed.remove(); }, 666);
+    });
+}
+
 guessed = $(".imdb_guessed");
 title = guessed.attr("title");
 guessed.attr("title", title + " Please click here to confirm it or suggest another one.");
@@ -20,13 +31,16 @@ guessed.each(function(i) {
 
     $(this).click(function() {
         guessed = this;
+        closeCB = function() { $(guessed.imdb_form).fadeOut("slow", function() { $(this).remove(); guessed.imdb_form = null; }); };
         if (this.imdb_form) {
-            $(this.imdb_form).fadeOut("slow", function() { $(this).remove(); guessed.imdb_form = null; });
+            closeCB();
         } else {
             td = $(this).parents("td");
             td.append(makeImdbForm(this.mid, this.imdb));
-            td.find(".imdb_form").hide().fadeIn("slow");
-            this.imdb_form = td.find(".imdb_form");
+            imdb_form = td.find(".imdb_form");
+            setupImdbFormCallbacks(imdb_form, this.mid, closeCB, $(this));
+            imdb_form.hide().fadeIn("slow");
+            this.imdb_form = imdb_form;
         }
         return false;
     });

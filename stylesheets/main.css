@@ -76,11 +76,7 @@ table {
 
 .real_title {
     font-size: 0.9em;
-    color: #222;
-}
-
-td:hover .real_title {
-    color: #999;
+    color: #888;
 }
 
 .title {
