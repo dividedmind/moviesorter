@@ -203,16 +203,16 @@ def imdbid_for_movie(movie):
         their_vote = Vote.get_user_vote(votes)
         if their_vote:
             debug("user has voted for " + title + ", returning their vote")
-            return [True, str(their_vote.imdb)]
+            return [True, their_vote.imdb]
     if admin_vote:
         debug("returning admin vote")
-        return [True, str(admin_vote.imdb)]
+        return [True, admin_vote.imdb]
     if votes:
         debug("user has not voted or is not logged in, returning best vote for " + title)
-        return [True, str(votes.imdbs[0])]
+        return [True, votes.imdbs[0]]
 
     debug("trying to guess")
-    return [False, str(best_guess(title))]
+    return [False, best_guess(title)]
 
 def vote(mid, imdb):
     Vote.register(mid, imdb)
@@ -221,6 +221,6 @@ def imdbize(movies):
     for m in movies:
         [authoritative, imdbid] = imdbid_for_movie(m)
         if imdbid:
-            m['imdb'] = fetch_info(imdbid)
+            m['imdb'] = fetch_info(str(imdbid))
         m['imdb_confirmed'] = authoritative
     return movies
