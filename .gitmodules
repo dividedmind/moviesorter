@@ -1,0 +1,3 @@
+[submodule "imdbpy"]
+	path = imdbpy
+	url = file:///home/divide/projekty/imdbpy

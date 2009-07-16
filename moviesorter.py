@@ -9,6 +9,7 @@ from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
 import showtimes, geonames
+from imdbizator import imdbize
 
 template.register_template_library('abbrev')
 
@@ -26,7 +27,8 @@ class Movies(webapp.RequestHandler):
             tz = geonames.timezone(city)
             if tz:
                 debug("timezone for " + city + ": "  + unicode(tz) + ", current time:" + unicode(tz.localize(datetime.utcnow())))
-            self.response.out.write(template.render("movies.html", { 'city': city, 'movies': showtimes.find(city) }))
+            sts = imdbize(showtimes.find(city))
+            self.response.out.write(template.render("movies.html", { 'city': city, 'movies': sts }))
 
 application = webapp.WSGIApplication(
                                      [
