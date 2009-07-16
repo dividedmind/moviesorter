@@ -60,7 +60,7 @@ def do_find(city):
                 times = j.group(3).split('&nbsp; ')
                 cinemas.append({'link': cinemalink(city, tid), 'name': cinema, 'times': times})
 
-            movies.append({'link': movielink(city, mid), 'title': title, 'cinemas': cinemas})
+            movies.append({'mid': mid, 'link': movielink(city, mid), 'title': title, 'cinemas': cinemas})
 
         break # for debugging, don't fetch half the internet, ok
         if NEXT_RE.search(showtimes_page):

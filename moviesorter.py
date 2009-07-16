@@ -9,6 +9,7 @@ from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
 import showtimes, geonames
+import imdbizator
 from imdbizator import imdbize
 
 template.register_template_library('abbrev')
@@ -30,10 +31,17 @@ class Movies(webapp.RequestHandler):
             sts = imdbize(showtimes.find(city))
             self.response.out.write(template.render("movies.html", { 'city': city, 'movies': sts }))
 
+class ImdbSuggest(webapp.RequestHandler):
+    def post(self):
+        mid = self.request.get('mid')
+        imdb = self.request.get('imdb')
+        imdbizator.vote(mid, imdb)
+
 application = webapp.WSGIApplication(
                                      [
                                         ('/', MainPage),
-                                        ('/movies', Movies)
+                                        ('/movies', Movies),
+                                        ('/imdb_suggest', ImdbSuggest),
                                      ],
                                      debug=True)
 

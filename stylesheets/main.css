@@ -83,10 +83,10 @@ table {
     font-style: oblique;
 }
 
-.imdb_guessed {
-    font-size: 0.9em;
+.imdb_status {
+    font-size: 0.65em;
     position: relative;
-    bottom: 0.2em;
+    bottom: 0.5em;
     border-bottom: dotted thin #222;
 }
 
