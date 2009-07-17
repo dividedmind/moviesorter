@@ -23,6 +23,7 @@ def check_match(critID, imdbid):
     except:
         return False
 
+@gaecache()
 def try_match(crit, imdb):
     if check_match(crit, imdb):
         info("found imdb to criticker mapping from " + imdb + " to " + crit)
@@ -33,8 +34,8 @@ def try_match(crit, imdb):
     else:
         return None
 
-def search_by_imdb(imdb):
-    title = imdb['title']
+@gaecache()
+def search_by_title(title):
     info("searching for imdb->criticker mapping for " + title)
     BASE_URL = 'http://www.criticker.com/?st=movies&g=Go&h='
     RESULT_RE = re.compile(r'<div class=\'sr_result_name\'><a href=\'http://www.criticker.com/film/(.*?)/\'>')
@@ -46,9 +47,7 @@ def search_by_imdb(imdb):
         debug('criticker redirected us to ' + goturl + ', trying to make odds of it')
         match = FILM_RE.search(goturl)
         if match:
-            m = try_match(match.group(1), imdb.movieID)
-            if m:
-                return m
+            return [match.group(1)]
         return None
 
     result = decode_htmlentities(unicode(cnn.read(), "latin1"))
@@ -58,12 +57,16 @@ def search_by_imdb(imdb):
     for match in RESULT_RE.finditer(result):
         ids_to_try.add(match.group(1))
 
+    return ids_to_try
+
+    return None
+
+def search_by_imdb(imdb):
+    ids_to_try = search_by_title(imdb['title'])
     for i in ids_to_try:
         m = try_match(i, imdb.movieID)
         if m:
             return m
-
-    return None
 
 class ImdbCritickerMapping(db.Model):
     critID = db.StringProperty(required = True)
@@ -85,6 +88,7 @@ PSI_RE = re.compile(r'<font class=\'pti_font\'>(\d{1,3})</font>')
 class Session:
     def __init__(self, user, passwd):
         self.agent = br = Browser()
+        self.user = user
 
         br.open('http://www.criticker.com/signin.php')
         br.select_form('signinform')
@@ -113,10 +117,14 @@ class Session:
         
         res = self.agent.open(movie_url(critID)).read()
         match = PSI_RE.search(res)
+        data = {'critID': critID}
         if match:
-            return match.group(1)
+            data['rating'] = match.group(1)
         else:
-            return "???"
+            if critID == u'Coraline':
+                debug("didn't find rating in " + res)
+            data['rating'] = '???'
+        return data
 
 class CritickerCredentials(db.Model):
     username = db.StringProperty(required = True)
@@ -164,6 +172,9 @@ def ize(movies):
         return movies
 
     for m in movies:
+        d = session.get_data_for_movie(m)
         m['criticker'] = session.get_data_for_movie(m)
+        if m['title'] == 'Coraline':
+            break # for debug
 
     return movies
