@@ -22,6 +22,8 @@
                 <td class="criticker">
                 {% if movie.criticker %}
                     <a href="http://www.criticker.com/film/{{ movie.criticker.critID }}/">{{ movie.criticker.rating }}</a>
+                {% else %}
+                    <a href="#" class="criticker_notfound" title="This movie was not found on Criticker.">[??]</a>
                 {% endif %}
                 </td>
             {% endif %}
@@ -37,4 +39,5 @@
 </table>
 
 <script src="/scripts/imdb_confirmation.js"></script>
+<script src="/scripts/criticker_suggestion.js"></script>
 {% endblock %}

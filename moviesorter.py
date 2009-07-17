@@ -62,6 +62,12 @@ class ImdbSuggest(webapp.RequestHandler):
         imdb = self.request.get('imdb')
         imdbizator.vote(mid, imdb)
 
+class CritickerSuggest(webapp.RequestHandler):
+    def post(self):
+        crit = self.request.get('criticker')
+        imdb = self.request.get('imdb')
+        criticker.try_match(crit, imdb)
+
 class Criticker(webapp.RequestHandler):
     def post(self):
         city = self.request.get('city')
@@ -82,6 +88,7 @@ application = webapp.WSGIApplication(
                                         ('/', MainPage),
                                         ('/movies', Movies),
                                         ('/imdb_suggest', ImdbSuggest),
+                                        ('/criticker_suggest', CritickerSuggest),
                                         ('/criticker', Criticker),
                                      ],
                                      debug=True)

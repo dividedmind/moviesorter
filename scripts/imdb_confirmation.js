@@ -1,7 +1,7 @@
 function makeImdbForm(mid, imdb)
 {
     return(
-        '<div class="imdb_form" id="imdbform_' + mid + '">' +
+        '<div class="imdb_form suggestion_form" id="imdbform_' + mid + '">' +
             'Confirm or suggest address of another IMDb page:<br/>' +
             '<input name="imdb" type="text" value="' + imdb + '"/> <input type="submit" value="Ok"/>' +
         '</div>');

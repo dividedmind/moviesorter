@@ -121,7 +121,7 @@ td.criticker {
     border-bottom: dotted thin #222;
 }
 
-.imdb_form {
+.suggestion_form {
     position: absolute;
     font-size: 0.8em;
     opacity: 0.9;
@@ -129,6 +129,6 @@ td.criticker {
     padding: 1em;
 }
 
-.imdb_form input[type=text] {
+.suggestion_form input[type=text] {
     width: 20em;
 }

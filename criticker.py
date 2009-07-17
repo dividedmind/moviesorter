@@ -7,6 +7,7 @@ from google.appengine.ext import db
 from google.appengine.api import memcache
 from google.appengine.api import users
 
+from imdbizator import massage_imdbid
 from mechanize import Browser
 from memoize import gaecache
 from util import get_and_decode, decode_htmlentities
@@ -25,7 +26,19 @@ def check_match(critID, imdbid):
     except:
         return False
 
+def massage_critid(crit):
+    CRIT_RE = re.compile(r'^((http://)?((www\.)?criticker\.com)?/?film/)?/?(.*?)(/|$)')
+    match = CRIT_RE.match(crit)
+    if match:
+        return match.group(5)
+    else:
+        return None
+
 def try_match(crit, imdb):
+    imdb = massage_imdbid(imdb)
+    crit = massage_critid(crit)
+    if not (imdb and crit):
+        return None
     if check_match(crit, imdb):
         info("found imdb to criticker mapping from " + imdb + " to " + crit)
         icm = ImdbCritickerMapping.get_or_insert("imdb:" + imdb, critID = crit)
