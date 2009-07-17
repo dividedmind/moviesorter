@@ -35,7 +35,7 @@ def try_match(crit, imdb):
     else:
         return None
 
-@gaecache()
+@gaecache(time = 3600)
 def search_by_title(title):
     info("searching for imdb->criticker mapping for " + title)
     BASE_URL = 'http://www.criticker.com/?st=movies&g=Go&h='
