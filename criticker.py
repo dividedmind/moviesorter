@@ -4,6 +4,7 @@ import re, urllib
 from logging import debug, info
 
 from google.appengine.ext import db
+from google.appengine.api import memcache
 from google.appengine.api import users
 
 from mechanize import Browser
@@ -114,7 +115,11 @@ class Session:
         
         if not critID:
             return None
-        
+
+        result = memcache.get(critID, "criticker:" + self.user)
+        if result:
+            return result
+
         res = self.agent.open(movie_url(critID)).read()
         match = PSI_RE.search(res)
         data = {'critID': critID}
@@ -124,6 +129,7 @@ class Session:
             if critID == u'Coraline':
                 debug("didn't find rating in " + res)
             data['rating'] = '???'
+        memcache.set(critID, data, 3600, namespace = "criticker:" + self.user)
         return data
 
 class CritickerCredentials(db.Model):
