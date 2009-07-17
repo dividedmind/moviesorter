@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import re, urllib
+from logging import debug
 
 from google.appengine.ext import db
 from google.appengine.api import users
@@ -38,6 +39,23 @@ class CritickerCredentials(db.Model):
         creds.password = password
         creds.put()
 
+    @staticmethod
+    def get_username():
+        user = users.get_current_user()
+        if not user:
+            return None
+        debug("looking for criticker credentials of " + user.user_id())
+        creds = CritickerCredentials.get_by_key_name("user:"  + user.user_id())
+        if not creds:
+            debug("credentials not found")
+            return None
+        username = creds.username
+        debug("username is " + username)
+        return username
+
 def set_credentials(username, password):
     s = Session(username, password)
     CritickerCredentials.set(username, password)
+
+def get_username():
+    return CritickerCredentials.get_username()

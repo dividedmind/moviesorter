@@ -18,12 +18,13 @@ template.register_template_library('abbrev')
 class RequestHandler(webapp.RequestHandler):
     def render(self, templ, arguments):
         user = users.get_current_user()
-        arguments['user' ] = user
         if user:
             arguments['logout'] = users.create_logout_url(self.request.url)
+            user.criticker = criticker.get_username()
         else:
             arguments['login'] = users.create_login_url(self.request.url)
         arguments['criticker_errors'] = self.request.get('criticker_errors')
+        arguments['user'] = user
         self.response.out.write(template.render(templ, arguments))
 
 class MainPage(RequestHandler):
