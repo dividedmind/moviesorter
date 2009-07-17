@@ -39,9 +39,16 @@ a {
 }
 
 #forms {
-    width: 25em;
+    width: 60em;
+    text-align: center;
     margin-left: auto;
     margin-right: auto;
+    margin-bottom: 1ex;
+}
+
+#forms form {
+    display: inline;
+    margin: 1em;
 }
 
 input {

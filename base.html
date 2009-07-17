@@ -28,6 +28,22 @@
             City: <input type="text" id="city" name="city" value="{{ city }}"/>
             <input type="submit" value="Show me movies!"/>
         </form>
+        {% if user %}
+            <form action="/criticker" method="post">
+                <input type="hidden" name="city" value="{{ city }}"/>
+                {% if user.criticker %}
+                    Linked to criticker account: {{ user.criticker }}.
+                    <input type="submit" name="unlink" value="Unlink"/>
+                {% else %}
+                    Link your criticker account:
+                    <input type="text" name="username"/>
+                    <input type="password" name="password"/>
+                    <input type="submit" value="Ok"/>
+                {% endif %}
+            </form>
+        {% else %}
+            <a href="{{ login }}">Login</a> to link your <a href="http://www.criticker.com">criticker</a> account.</a>
+        {% endif %}
     </div>
 
     {% block content %}
@@ -44,7 +60,9 @@
             <a href="http://www.stuartbishop.net/">Stuart Bishop</a> for <a href="http://pytz.sourceforge.net">pytz</a>;
             <a href="http://imdb.com">IMDb</a>;
             <a href="http://imdbpy.sourceforge.net/">IMDbPY</a>,
-            <a href="http://jquery.com/">jQuery</a>
+            <a href="http://jquery.com/">jQuery</a>,
+            <a href="http://www.criticker.com">Criticker</a>,
+            John J. Lee for <a href="http://wwwsearch.sourceforge.net/mechanize/">mechanize</a>
         .
     </div>
 </html>
