@@ -14,6 +14,7 @@ from util import get_and_decode, decode_htmlentities
 def movie_url(critID):
     return 'http://www.criticker.com/film/' + critID + "/"
 
+@gaecache()
 def check_match(critID, imdbid):
     debug("checking match for " + imdbid + " at " + critID)
     lookingfor = 'http://www.imdb.com/title/tt' + imdbid
@@ -24,7 +25,6 @@ def check_match(critID, imdbid):
     except:
         return False
 
-@gaecache()
 def try_match(crit, imdb):
     if check_match(crit, imdb):
         info("found imdb to criticker mapping from " + imdb + " to " + crit)
@@ -49,7 +49,7 @@ def search_by_title(title):
         match = FILM_RE.search(goturl)
         if match:
             return [match.group(1)]
-        return None
+        return 0
 
     result = decode_htmlentities(unicode(cnn.read(), "latin1"))
 
@@ -60,10 +60,10 @@ def search_by_title(title):
 
     return ids_to_try
 
-    return None
-
 def search_by_imdb(imdb):
     ids_to_try = search_by_title(imdb['title'])
+    if ids_to_try == 0:
+        return None
     for i in ids_to_try:
         m = try_match(i, imdb.movieID)
         if m:
