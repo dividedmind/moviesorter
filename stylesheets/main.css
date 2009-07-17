@@ -51,6 +51,26 @@ a {
     margin: 1em;
 }
 
+#forms input[type=text] {
+    width: 10em;
+}
+
+#forms input[type=password] {
+    width: 10em;
+}
+
+#criticker_errors {
+    display: inline;
+    position: absolute;
+    font-size: 0.8em;
+}
+
+#criticker_errors span {
+    position: relative;
+    bottom: 3ex;
+    left: 6em;
+}
+
 input {
     color: inherit;
     background-color: black;

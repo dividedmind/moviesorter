@@ -36,6 +36,7 @@
                     <input type="submit" name="unlink" value="Unlink"/>
                 {% else %}
                     Link your criticker account:
+                    {% if criticker_errors %}<div id="criticker_errors"><span>{{ criticker_errors }}</span></div>{% endif %}
                     <input type="text" name="username"/>
                     <input type="password" name="password"/>
                     <input type="submit" value="Ok"/>

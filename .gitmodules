@@ -1,3 +1,6 @@
 [submodule "imdbpy"]
 	path = imdbpy
 	url = file:///home/divide/projekty/imdbpy
+[submodule "libs/mechanize"]
+	path = libs/mechanize
+	url = file:///home/divide/projekty/mechanize

@@ -10,7 +10,7 @@ from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
 import showtimes, geonames
-import imdbizator
+import imdbizator, criticker
 from imdbizator import imdbize
 
 template.register_template_library('abbrev')
@@ -23,6 +23,7 @@ class RequestHandler(webapp.RequestHandler):
             arguments['logout'] = users.create_logout_url(self.request.url)
         else:
             arguments['login'] = users.create_login_url(self.request.url)
+        arguments['criticker_errors'] = self.request.get('criticker_errors')
         self.response.out.write(template.render(templ, arguments))
 
 class MainPage(RequestHandler):
@@ -51,11 +52,24 @@ class ImdbSuggest(webapp.RequestHandler):
         imdb = self.request.get('imdb')
         imdbizator.vote(mid, imdb)
 
+class Criticker(webapp.RequestHandler):
+    def post(self):
+        city = self.request.get('city')
+        params = {'city': city.encode('utf-8')}
+        username = self.request.get('username')
+        password = self.request.get('password')
+        try:
+            criticker.set_credentials(username, password)
+        except criticker.WrongPassword:
+            params['criticker_errors'] = "Wrong username and password."
+        self.redirect("/movies?" + urlencode(params))
+
 application = webapp.WSGIApplication(
                                      [
                                         ('/', MainPage),
                                         ('/movies', Movies),
                                         ('/imdb_suggest', ImdbSuggest),
+                                        ('/criticker', Criticker),
                                      ],
                                      debug=True)
 
