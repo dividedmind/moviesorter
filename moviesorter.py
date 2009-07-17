@@ -31,8 +31,17 @@ class MainPage(RequestHandler):
     def get(self):
         self.render("welcome.html", {})
 
-def sort_by_imdb(movies):
-    return sorted(movies, key = lambda m: 'imdb' in m and m['imdb'].get('rating') or 0.0, reverse = True)
+def sort_by_rating(movies):
+    def get_rating(movie):
+        try:
+            return int(movie['criticker']['rating'])
+        except:
+            try:
+                return movie['imdb'].get('rating') * 10.0
+            except:
+                return 0.0
+        return 0.0
+    return sorted(movies, key = get_rating, reverse = True)
 
 class Movies(RequestHandler):
     def get(self):
@@ -44,7 +53,7 @@ class Movies(RequestHandler):
             tz = geonames.timezone(city)
             if tz:
                 debug("timezone for " + city + ": "  + unicode(tz) + ", current time:" + unicode(tz.localize(datetime.utcnow())))
-            sts = sort_by_imdb(criticker.ize(imdbize(showtimes.find(city))))
+            sts = sort_by_rating(criticker.ize(imdbize(showtimes.find(city))))
             self.render("movies.html", { 'city': city, 'movies': sts })
 
 class ImdbSuggest(webapp.RequestHandler):
