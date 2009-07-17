@@ -21,14 +21,14 @@ def fetch_info(movieID):
     im = ia.get_movie(movieID, info = 'main')
     return im
 
-@gaecache()
+@gaecache(time = 3600)
 def best_guess(title):
     title = massage_title(title)
     im = ia._search_movie(title, results = 1)
     if im:
         return im[0][0]
     else:
-        return None
+        return 0
 
 def massage_imdbid(imdb):
     IMDB_RE = re.compile(r'^((http://)?((www\.)?imdb\.com)?/?title/)?/?(tt)?(\d{7})(/.*|$)')
