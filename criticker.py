@@ -172,7 +172,6 @@ def ize(movies):
         return movies
 
     for m in movies:
-        d = session.get_data_for_movie(m)
         m['criticker'] = session.get_data_for_movie(m)
 
     return movies
