@@ -101,6 +101,10 @@ table {
     text-align: center;
 }
 
+td.criticker {
+    text-align: center;
+}
+
 .real_title {
     font-size: 0.9em;
     color: #888;
