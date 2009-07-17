@@ -174,7 +174,5 @@ def ize(movies):
     for m in movies:
         d = session.get_data_for_movie(m)
         m['criticker'] = session.get_data_for_movie(m)
-        if m['title'] == 'Coraline':
-            break # for debug
 
     return movies
