@@ -44,7 +44,7 @@ class Movies(RequestHandler):
             tz = geonames.timezone(city)
             if tz:
                 debug("timezone for " + city + ": "  + unicode(tz) + ", current time:" + unicode(tz.localize(datetime.utcnow())))
-            sts = sort_by_imdb(imdbize(showtimes.find(city)))
+            sts = sort_by_imdb(criticker.ize(imdbize(showtimes.find(city))))
             self.render("movies.html", { 'city': city, 'movies': sts })
 
 class ImdbSuggest(webapp.RequestHandler):

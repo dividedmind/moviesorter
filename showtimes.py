@@ -7,6 +7,8 @@ from datetime import datetime, timedelta
 from google.appengine.api import memcache
 import geonames, pytz
 
+from util import get_and_decode
+
 BASE = 'http://www.google.com/movies?hl=en&sort=3&near='
 TITLE_RE = re.compile(r'mid=([^"]*?)"><b dir=ltr>(.*?)</b>(.*?)<tr><td>&nbsp;</td></tr>')
 CINEMA_RE = re.compile(r'tid=([0-9a-f]*)"><b dir=ltr>(.*?)</b></a><br>.*?<br>(.*?)</font></td>')
@@ -14,29 +16,11 @@ NEXT_RE = re.compile(r'<br>Next</a>')
 PLACE_RE = re.compile(r'<b>Showtimes for (.*?)</b>')
 NO_SHOWTIMES = 'No showtimes were found on'
 
-def substitute_entity(match):
-    ent = match.group(3)
-
-    if match.group(1) == "#":
-        if match.group(2) == '':
-            return unichr(int(ent))
-        elif match.group(2) == 'x':
-            return unichr(int('0x'+ent, 16))
-    else:
-        return match.group()
-
-def decode_htmlentities(string):
-    entity_re = re.compile(r'&(#?)(x?)(\w+);')
-    return entity_re.subn(substitute_entity, string)[0]
-
 def movielink(baseurl, mid):
     return baseurl + "&mid=" + mid
 
 def cinemalink(baseurl, tid):
     return baseurl + "&tid=" + tid
-
-def get_and_decode(url):
-    return decode_htmlentities(unicode(urllib.urlopen(url).read(), "latin1"))
 
 def do_find(city):
     url = baseurl = BASE + urllib.quote(city.encode("utf-8"))

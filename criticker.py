@@ -1,16 +1,87 @@
 # -*- coding: utf-8 -*-
 
 import re, urllib
-from logging import debug
+from logging import debug, info
 
 from google.appengine.ext import db
 from google.appengine.api import users
 
 from mechanize import Browser
+from memoize import gaecache
+from util import get_and_decode, decode_htmlentities
+
+def movie_url(critID):
+    return 'http://www.criticker.com/film/' + critID + "/"
+
+def check_match(critID, imdbid):
+    debug("checking match for " + imdbid + " at " + critID)
+    lookingfor = 'http://www.imdb.com/title/tt' + imdbid
+    result = get_and_decode(movie_url(critID))
+    try:
+        foo = result.index(lookingfor)
+        return True
+    except:
+        return False
+
+def try_match(crit, imdb):
+    if check_match(crit, imdb):
+        info("found imdb to criticker mapping from " + imdb + " to " + crit)
+        icm = ImdbCritickerMapping.get_or_insert("imdb:" + imdb, critID = crit)
+        icm.critID = crit
+        icm.put()
+        return crit
+    else:
+        return None
+
+def search_by_imdb(imdb):
+    title = imdb['title']
+    info("searching for imdb->criticker mapping for " + title)
+    BASE_URL = 'http://www.criticker.com/?st=movies&g=Go&h='
+    RESULT_RE = re.compile(r'<div class=\'sr_result_name\'><a href=\'http://www.criticker.com/film/(.*?)/\'>')
+    FILM_RE = re.compile(r'http://www.criticker.com/film/(.*?)/')
+    query_url = BASE_URL + urllib.quote(title.encode('utf-8'))
+    cnn = urllib.urlopen(query_url)
+    goturl = cnn.geturl()
+    if goturl != query_url:
+        debug('criticker redirected us to ' + goturl + ', trying to make odds of it')
+        match = FILM_RE.search(goturl)
+        if match:
+            m = try_match(match.group(1), imdb.movieID)
+            if m:
+                return m
+        return None
+
+    result = decode_htmlentities(unicode(cnn.read(), "latin1"))
+
+    ids_to_try = set()
+
+    for match in RESULT_RE.finditer(result):
+        ids_to_try.add(match.group(1))
+
+    for i in ids_to_try:
+        m = try_match(i, imdb.movieID)
+        if m:
+            return m
+
+    return None
+
+class ImdbCritickerMapping(db.Model):
+    critID = db.StringProperty(required = True)
+
+    @staticmethod
+    def find(imdb):
+        mapping = ImdbCritickerMapping.get_by_key_name("imdb:" + imdb.movieID)
+        if mapping:
+            debug("returning imdb to criticker mapping from " + imdb.movieID + " to " + mapping.critID)
+            return mapping.critID
+
+        if imdb:
+            return search_by_imdb(imdb)
 
 class WrongPassword(Exception):
     pass
 
+PSI_RE = re.compile(r'<font class=\'pti_font\'>(\d{1,3})</font>')
 class Session:
     def __init__(self, user, passwd):
         self.agent = br = Browser()
@@ -24,6 +95,28 @@ class Session:
             foo = res.index('index.php')
         except:
             raise WrongPassword(user + ":" + passwd)
+
+    @staticmethod
+    def for_current_user():
+        creds = CritickerCredentials.get_for_current_user()
+        if not creds:
+            return None
+        return Session(creds.username, creds.password)
+
+    def get_data_for_movie(self, movie):
+        if not 'imdb' in movie:
+            return None
+        critID = ImdbCritickerMapping.find(movie['imdb'])
+        
+        if not critID:
+            return None
+        
+        res = self.agent.open(movie_url(critID)).read()
+        match = PSI_RE.search(res)
+        if match:
+            return match.group(1)
+        else:
+            return "???"
 
 class CritickerCredentials(db.Model):
     username = db.StringProperty(required = True)
@@ -64,3 +157,13 @@ def get_username():
 def forget_credentials():
     creds = CritickerCredentials.get_for_current_user()
     creds.delete()
+
+def ize(movies):
+    session = Session.for_current_user()
+    if not session:
+        return movies
+
+    for m in movies:
+        m['criticker'] = session.get_data_for_movie(m)
+
+    return movies
