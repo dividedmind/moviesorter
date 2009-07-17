@@ -57,12 +57,15 @@ class Criticker(webapp.RequestHandler):
     def post(self):
         city = self.request.get('city')
         params = {'city': city.encode('utf-8')}
-        username = self.request.get('username')
-        password = self.request.get('password')
-        try:
-            criticker.set_credentials(username, password)
-        except criticker.WrongPassword:
-            params['criticker_errors'] = "Wrong username and password."
+        if self.request.get('unlink'):
+            criticker.forget_credentials()
+        else:
+            username = self.request.get('username')
+            password = self.request.get('password')
+            try:
+                criticker.set_credentials(username, password)
+            except criticker.WrongPassword:
+                params['criticker_errors'] = "Wrong username and password."
         self.redirect("/movies?" + urlencode(params))
 
 application = webapp.WSGIApplication(

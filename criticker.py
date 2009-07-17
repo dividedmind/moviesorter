@@ -41,17 +41,18 @@ class CritickerCredentials(db.Model):
 
     @staticmethod
     def get_username():
+        creds = CritickerCredentials.get_for_current_user()
+        if not creds:
+            return None
+        username = creds.username
+        return username
+
+    @staticmethod
+    def get_for_current_user():
         user = users.get_current_user()
         if not user:
             return None
-        debug("looking for criticker credentials of " + user.user_id())
-        creds = CritickerCredentials.get_by_key_name("user:"  + user.user_id())
-        if not creds:
-            debug("credentials not found")
-            return None
-        username = creds.username
-        debug("username is " + username)
-        return username
+        return CritickerCredentials.get_by_key_name("user:"  + user.user_id())
 
 def set_credentials(username, password):
     s = Session(username, password)
@@ -59,3 +60,7 @@ def set_credentials(username, password):
 
 def get_username():
     return CritickerCredentials.get_username()
+
+def forget_credentials():
+    creds = CritickerCredentials.get_for_current_user()
+    creds.delete()
