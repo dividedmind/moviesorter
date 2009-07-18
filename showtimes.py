@@ -58,7 +58,6 @@ def do_find(city):
 
             movies.append({'mid': mid, 'link': movielink(baseurl, mid), 'title': title, 'cinemas': cinemas})
 
-        break
         if NEXT_RE.search(showtimes_page):
             start = start + 10
             url = baseurl + "&start=" + str(start)
