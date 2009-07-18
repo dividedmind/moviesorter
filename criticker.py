@@ -89,7 +89,7 @@ class ImdbCritickerMapping(db.Model):
     def find(imdb):
         mapping = ImdbCritickerMapping.get_by_key_name("imdb:" + imdb.movieID)
         if mapping:
-            debug("returning imdb to criticker mapping from " + imdb.movieID + " to " + mapping.critID)
+            debug("returning known imdb to criticker mapping from " + imdb.movieID + " to " + mapping.critID)
             return mapping.critID
 
         if imdb:
@@ -113,6 +113,8 @@ class Session:
             foo = res.index('index.php')
         except:
             raise WrongPassword(user + ":" + passwd)
+        FL_RE = re.compile(r'(http://www\.criticker\.com/\?fl=\d+)')
+        self.flurl = FL_RE.search(br.open('http://www.criticker.com/index.php').read()).group(1)
 
     @staticmethod
     def for_current_user():
@@ -144,6 +146,34 @@ class Session:
             data['rating'] = '???'
         memcache.set(critID, data, 3600, namespace = "criticker:" + self.user)
         return data
+
+    def get_tiers(self):
+        tiers = memcache.get("tiers", namespace = "criticker:" + self.user)
+        if tiers:
+            return tiers
+
+        page = 1
+        baseurl = self.flurl + "&p="
+        tiers = []
+        while True:
+            content = self.agent.open(baseurl + str(page)).read()
+            try:
+                foo = content.index('fl_currentsubletter')
+            except:
+                # after last page
+                break
+            TIER_RE = re.compile(r'Tier (\d{1,2}) Films</div></td></tr>.*?id=\'fl_yourscore_span.*?\'>(\d{1,3})', flags = re.S)
+            for m in TIER_RE.finditer(content):
+                tier = int(m.group(1))
+                score = int(m.group(2))
+                debug("found tier " + str(tier) + " at score " + str(score))
+                while len(tiers) < (11 - tier):
+                    tiers.append(score)
+            page += 1
+
+        debug("final tiers: " + str(tiers))
+        memcache.set("tiers", tiers, namespace = "criticker:" + self.user)
+        return tiers
 
 class CritickerCredentials(db.Model):
     username = db.StringProperty(required = True)
@@ -190,7 +220,22 @@ def ize(movies):
     if not session:
         return movies
 
+    tiers = session.get_tiers()
     for m in movies:
         m['criticker'] = session.get_data_for_movie(m)
+        try:
+            foo = int(m['criticker']['rating'])
+        except:
+            if 'imdb' in m:
+                rating = m['imdb'].get('rating')
+                if rating:
+                    m['synthetic_criticker'] = synthesize(rating, tiers)
 
     return movies
+
+def synthesize(ten_ranking, tiers):
+    """ tiers are [best score for tier 10, bsft9, ..., bsft1 """
+    base = 10 - int(ten_ranking)
+    delta = ten_ranking % 1
+    value = int(round(tiers[base] + (tiers[base - 1] - tiers[base]) * delta))
+    return value
