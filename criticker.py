@@ -141,8 +141,6 @@ class Session:
         if match:
             data['rating'] = match.group(1)
         else:
-            if critID == u'Coraline':
-                debug("didn't find rating in " + res)
             data['rating'] = '???'
         memcache.set(critID, data, 3600, namespace = "criticker:" + self.user)
         return data
