@@ -40,7 +40,13 @@ def massage_imdbid(imdb):
 
 def mid_valid(mid):
     MID_RE = re.compile("^[a-f0-9]+$")
-    return MID_RE.match(mid)
+    if MID_RE.match(mid):
+        return mid
+
+    ENH_RE = re.compile("^http://www.enh.pl/film.do\?id=(\d+)$")
+    m = ENH_RE.match(mid)
+    if m:
+        return "enh2009:" + m.group(1)
 
 class Vote(db.Model):
     imdb = db.StringProperty(required = True)
@@ -105,7 +111,7 @@ class Vote(db.Model):
         vote.put()
 
     @staticmethod
-    def register(mid, imdb):
+    def register(given_mid, imdb):
         """ registers vote. logic:
         - massage imdb id, bail out if invalid
         - if user is admin:
@@ -113,8 +119,9 @@ class Vote(db.Model):
             - remove vote tally from the database
         - else tally vote
         """
-        if not mid_valid(mid):
-            warn("invalid mid [" + mid + "] submitted, discarding")
+        mid = mid_valid(given_mid)
+        if not mid:
+            warn("invalid mid [" + given_mid + "] submitted, discarding")
             return
         imdbid = massage_imdbid(imdb)
         if not imdbid:

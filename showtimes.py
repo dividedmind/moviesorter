@@ -72,6 +72,8 @@ def nearest_midnight(time):
     return next_day
 
 def find(city):
+    if str(city) == 'enh2009':
+        return read_enh2009()
     city_enc = city.encode('utf-8')
     result = memcache.get(city_enc, namespace = "showtimes")
     if not result:
@@ -91,7 +93,20 @@ def find(city):
 
     return result
 
+def read_enh2009():
+    debug("reading enh")
+    f = open('enh2009.txt', 'r')
+    movies = []
+    for line in f:
+        enhid, title = line.split(":::")
+        m = {'mid': "enh2009:" + enhid, 'link': "http://www.enh.pl/film.do?id=" + enhid, 'title': title}
+        debug("got movie: " + str(m))
+        movies.append(m)
+    return movies
+
 def get_place(typed):
+    if str(typed) == 'enh2009':
+        return typed
     typed = typed.encode("utf-8")
     reloc = memcache.get(typed, namespace = "places")
     if reloc:
