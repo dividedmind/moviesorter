@@ -153,22 +153,24 @@ class Session:
         baseurl = self.flurl + "&page="
         PAGES_RE = re.compile(r'Page 1 of (\d+)')
         pages = None
-        tiers = []
+        scores = []
         while True:
             content = self.agent.open(baseurl + str(page)).read()
             if not pages:
                 pages = int(PAGES_RE.search(content).group(1))
-            TIER_RE = re.compile(r'Tier (\d{1,2}) Films</div>.*?class=\'score_[a-z]+\'>(\d{1,3})', flags = re.S)
-            for m in TIER_RE.finditer(content):
-                tier = int(m.group(1))
-                score = int(m.group(2))
-                debug("found tier " + str(tier) + " at score " + str(score))
-                while len(tiers) < (11 - tier):
-                    tiers.append(score)
+            SCORE_RE = re.compile(r'class=\'score_[a-z]+\'>(\d{1,3})', flags = re.S)
+            for m in SCORE_RE.finditer(content):
+                score = int(m.group(1))
+                debug("found score " + str(score))
+                scores.append(score)
             page += 1
             if page > pages:
             	break
 
+        tiers = range(10)
+        scorenum = len(scores)
+        for i in range(10):
+            tiers[i] = scores[i * scorenum / 11]
         debug("final tiers: " + str(tiers))
         memcache.set("tiers", tiers, namespace = "criticker:" + self.user)
         return tiers
