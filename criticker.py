@@ -113,8 +113,7 @@ class Session:
             foo = res.index('index.php')
         except:
             raise WrongPassword(user + ":" + passwd)
-        FL_RE = re.compile(r'(http://www\.criticker\.com/\?fl=\d+)')
-        self.flurl = FL_RE.search(br.open('http://www.criticker.com/index.php').read()).group(1)
+        self.flurl = 'http://www.criticker.com/?fl&view=prs'
 
     @staticmethod
     def for_current_user():
@@ -151,16 +150,15 @@ class Session:
             return tiers
 
         page = 1
-        baseurl = self.flurl + "&p="
+        baseurl = self.flurl + "&page="
+        PAGES_RE = re.compile(r'Page 1 of (\d+)')
+        pages = None
         tiers = []
         while True:
             content = self.agent.open(baseurl + str(page)).read()
-            try:
-                foo = content.index('fl_currentsubletter')
-            except:
-                # after last page
-                break
-            TIER_RE = re.compile(r'Tier (\d{1,2}) Films</div></td></tr>.*?id=\'fl_yourscore_span.*?\'>(\d{1,3})', flags = re.S)
+            if not pages:
+                pages = int(PAGES_RE.search(content).group(1))
+            TIER_RE = re.compile(r'Tier (\d{1,2}) Films</div>.*?class=\'score_[a-z]+\'>(\d{1,3})', flags = re.S)
             for m in TIER_RE.finditer(content):
                 tier = int(m.group(1))
                 score = int(m.group(2))
@@ -168,6 +166,8 @@ class Session:
                 while len(tiers) < (11 - tier):
                     tiers.append(score)
             page += 1
+            if page > pages:
+            	break
 
         debug("final tiers: " + str(tiers))
         memcache.set("tiers", tiers, namespace = "criticker:" + self.user)
