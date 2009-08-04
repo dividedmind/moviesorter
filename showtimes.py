@@ -72,7 +72,7 @@ def nearest_midnight(time):
     return next_day
 
 def find(city):
-    if str(city) == 'enh2009':
+    if city == 'enh2009':
         return read_enh2009()
     city_enc = city.encode('utf-8')
     result = memcache.get(city_enc, namespace = "showtimes")
@@ -105,7 +105,7 @@ def read_enh2009():
     return movies
 
 def get_place(typed):
-    if str(typed) == 'enh2009':
+    if typed == 'enh2009':
         return typed
     typed = typed.encode("utf-8")
     reloc = memcache.get(typed, namespace = "places")
