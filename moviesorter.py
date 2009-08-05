@@ -33,17 +33,23 @@ class MainPage(RequestHandler):
 
 def sort_by_rating(movies):
     def get_rating(movie):
+        delta = 0.0
+        rating = 0.0
         try:
-            return int(movie['criticker']['rating'])
+            delta += movie['imdb'].get('rating') / 100.0
+        except:
+            pass
+        try:
+            rating = int(movie['criticker']['rating'])
         except:
             try:
-                return movie['synthetic_criticker']
+                rating = movie['synthetic_criticker']
             except:
                 try:
-                    return movie['imdb'].get('rating') * 10.0
+                    rating = movie['imdb'].get('rating') * 10.0
                 except:
-                    return 0.0
-        return 0.0
+                    pass
+        return rating + delta
     return sorted(movies, key = get_rating, reverse = True)
 
 class Movies(RequestHandler):
