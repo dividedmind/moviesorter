@@ -14,7 +14,7 @@ ia = IMDb(accessSystem = 'mobile')
 
 def massage_title(original_title):
     # hacks, heuristics &c go here
-    return re.sub(r'^(.*), The', r'The \1', original_title)
+    return re.sub(r'^(.*), The', r'The \1', original_title).strip()
 
 @gaecache()
 def fetch_info(movieID):
