@@ -62,19 +62,20 @@ class Movies(RequestHandler):
             tz = geonames.timezone(city)
             if tz:
                 debug("timezone for " + city + ": "  + unicode(tz) + ", current time:" + unicode(tz.localize(datetime.utcnow())))
-            sts = sort_by_rating(criticker.ize(imdbize(showtimes.find(city)[0:2])))
+            sts = sort_by_rating(criticker.ize(imdbize(showtimes.find(city)[0:7])))
             self.render("movies.html", { 'city': city, 'movies': sts })
             
-class Data(webapp.RequestHandler):
+class Data(RequestHandler):
     def get(self):
         mid = self.request.get('mid')
         city = self.request.get('city')
         title = showtimes.MovieIds.get_title(mid)
         movie = {'mid': mid, 'title': title, 'link': showtimes.city_movie_link(city, mid)}
+        movie = imdbize([movie], fetch = True)
+        movie = criticker.ize(movie, fetch = True)[0]
         debug(movie)
-        movie = imdbize([movie], fetch = True)[0]
         movie['fetch_required'] = False
-        self.response.out.write(template.render("movie.html", { 'movie': movie }))
+        self.render("movie.html", { 'movie': movie })
 
 class ImdbSuggest(webapp.RequestHandler):
     def post(self):
