@@ -43,7 +43,7 @@ def timezone(place):
     response = unicode(urllib.urlopen(url).read(), 'utf-8')
     result = simplejson.loads(response)
 
-    if result:
+    if result and 'timezoneId' in result:
         timezoneId = result['timezoneId']
         return pytz.timezone(timezoneId)
     else:

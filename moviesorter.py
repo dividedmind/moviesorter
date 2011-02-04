@@ -4,7 +4,7 @@ from urllib import urlencode
 from logging import info, debug
 from datetime import datetime
 
-from google.appengine.api import users
+from google.appengine.api import users, memcache
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
@@ -64,6 +64,15 @@ class Movies(RequestHandler):
                 debug("timezone for " + city + ": "  + unicode(tz) + ", current time:" + unicode(tz.localize(datetime.utcnow())))
             sts = sort_by_rating(criticker.ize(imdbize(showtimes.find(city))))
             self.render("movies.html", { 'city': city, 'movies': sts })
+            
+class Data(webapp.RequestHandler):
+    def get(self):
+        mid = self.request.get('mid')
+        title = showtimes.MovieIds.get_title(mid)
+        movie = {'mid': mid, 'title': title}
+        debug(movie)
+        movie = imdbize([movie], fetch = True)[0]
+        self.response.out.write(template.render("movie.html", { 'movie': movie }))
 
 class ImdbSuggest(webapp.RequestHandler):
     def post(self):
@@ -99,6 +108,7 @@ application = webapp.WSGIApplication(
                                         ('/imdb_suggest', ImdbSuggest),
                                         ('/criticker_suggest', CritickerSuggest),
                                         ('/criticker', Criticker),
+                                        ('/data', Data)
                                      ],
                                      debug=True)
 

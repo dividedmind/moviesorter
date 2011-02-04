@@ -5,6 +5,7 @@ from logging import info, debug
 from datetime import datetime, timedelta
 
 from google.appengine.api import memcache
+from google.appengine.ext import db
 import geonames, pytz
 
 from util import get_and_decode
@@ -21,6 +22,22 @@ def movielink(baseurl, mid):
 
 def cinemalink(baseurl, tid):
     return baseurl + "&tid=" + tid
+
+class MovieIds(db.Model):
+    title = db.StringProperty(required = True)
+    
+    @staticmethod
+    def add(mid, title):
+        record = MovieIds.get_or_insert("mid:" + mid, title = title)
+        record.title = title
+        debug("putting mid:" + mid + " title:" + title)
+        record.put()
+    
+    @staticmethod
+    def get_title(mid):
+        debug("finding mid:" + mid)
+        record = MovieIds.get_by_key_name("mid:" + mid)
+        return record.title
 
 def do_find(city):
     url = baseurl = BASE + urllib.quote(city.encode("utf-8"))
@@ -57,6 +74,7 @@ def do_find(city):
                 times = j.group(3).split('&nbsp; ')
                 cinemas.append({'link': cinemalink(baseurl, tid), 'name': cinema, 'times': times})
 
+            MovieIds.add(mid, title)
             movies.append({'mid': mid, 'link': movielink(baseurl, mid), 'title': title, 'cinemas': cinemas})
 
         if NEXT_RE.search(showtimes_page):

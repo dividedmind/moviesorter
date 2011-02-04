@@ -10,11 +10,12 @@ from google.appengine.api import users, memcache
 from imdb import IMDb
 
 from memoize import gaecache
+from util import decode_htmlentities
 
 ia = IMDb(accessSystem = 'mobile')
 
 MOVIE_URL = 'http://m.imdb.com/title/tt%s/'
-TITLE_RE = re.compile(r"<h1>(.*?) \(\d{4}\)</h1>")
+TITLE_RE = re.compile(r"<h1>(.*?) \(\d{4}.*?\)</h1>")
 RATING_RE = re.compile(r'<strong>(.*?)</strong>')
 
 class IMDbURLopener(URLopener):
@@ -27,7 +28,7 @@ def massage_title(original_title):
     return re.sub(r'^(.*), The', r'The \1', original_title).strip()
 
 def load_url(url):
-    return Opener.open(url).read()
+    return decode_htmlentities(unicode(Opener.open(url).read(), "latin1"))
 
 def fetch_info(movieID, fetch):
     im = memcache.get(movieID, namespace = 'imdb_info')
@@ -38,10 +39,14 @@ def fetch_info(movieID, fetch):
     
     url = MOVIE_URL % movieID
     movie_page = load_url(url)
+    debug(movie_page)
     title = TITLE_RE.search(movie_page).group(1)
     if not title:
         warn("Could not find imdb title for movie id %s" % movieID)
-    rating = float(RATING_RE.search(movie_page).group(1))
+    match = RATING_RE.search(movie_page)
+    rating = None
+    if match:
+        rating = float(match.group(1))
     if not rating:
         warn("Could not find imdb rating for movie id %s" % movieID)
     im = {
@@ -54,7 +59,7 @@ def fetch_info(movieID, fetch):
 
 def best_guess(title, fetch):
     result = memcache.get(title, namespace = 'imdb_title')
-    if result:
+    if result != None:
         return result
     if not fetch:
         return None
@@ -266,7 +271,7 @@ def imdbize(movies, fetch = False):
     for m in movies:
         m['fetch_required'] = False
         [authoritative, imdbid] = imdbid_for_movie(m, fetch)
-        if imdbid == 0:
+        if imdbid == None:
             m['fetch_required'] = True
         if imdbid:
             imdb = fetch_info(str(imdbid), fetch)

@@ -1,6 +1,8 @@
 {% extends "base.html" %}
 
 {% block content %}
+<script src="/scripts/data_puller.js"></script>
+
 <table>
     <tr>
         <th>Title</th>
@@ -17,4 +19,8 @@
 
 <script src="/scripts/imdb_confirmation.js"></script>
 <script src="/scripts/criticker_suggestion.js"></script>
+
+<script>
+    processFetchQueue();
+</script>
 {% endblock %}
