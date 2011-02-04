@@ -93,8 +93,13 @@ class ImdbCritickerMapping(db.Model):
             debug("returning known imdb to criticker mapping from " + imdb['movieID'] + " to " + mapping.critID)
             return mapping.critID
 
+        if imdb and not fetch:
+            raise RefetchNecessary()
         if fetch and imdb:
             return search_by_imdb(imdb)
+
+class RefetchNecessary(Exception):
+    pass
 
 class WrongPassword(Exception):
     pass
@@ -138,7 +143,7 @@ class Session:
             return result
         
         if not self.agent:
-            return None
+            raise RefetchNecessary()
 
         res = self.agent.open(movie_url(critID)).read()
         match = PSI_RE.search(res)
@@ -155,7 +160,7 @@ class Session:
         if tiers:
             return tiers
         if not self.agent:
-            return None
+            raise RefetchNecessary()
 
         page = 1
         baseurl = self.flurl + "&page="
@@ -231,14 +236,17 @@ def ize(movies, fetch = False):
     tiers = session.get_tiers()
 
     for m in movies:
-        m['criticker'] = session.get_data_for_movie(m)
         try:
-            foo = int(m['criticker']['rating'])
-        except:
-            if 'imdb' in m:
-                rating = m['imdb'].get('rating')
-                if rating:
-                    m['synthetic_criticker'] = synthesize(rating, tiers)
+            m['criticker'] = session.get_data_for_movie(m)
+            try:
+                foo = int(m['criticker']['rating'])
+            except:
+                if 'imdb' in m:
+                    rating = m['imdb'].get('rating')
+                    if rating:
+                        m['synthetic_criticker'] = synthesize(rating, tiers)
+        except RefetchNecessary:
+            m['fetch_required'] = True
 
     return movies
 

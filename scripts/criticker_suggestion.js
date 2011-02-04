@@ -19,13 +19,13 @@ function setupCritFormCallbacks(the_form, imdb, closeCB, guessed)
 }
 
 function setupCritickerHandler(param) {
-    title = $(param).attr("title");
-    $(param).attr("title", title + " If you think it's there, click here to suggest an address.");
-    tr = $(param).parents("tr");
+    title = $(this).attr("title");
+    $(this).attr("title", title + " If you think it's there, click here to suggest an address.");
+    tr = $(this).parents("tr");
     imdbtd = tr.find(".imdb");
-    param.imdb = imdbtd.find("a").attr("href");
+    this.imdb = imdbtd.find("a").attr("href");
 
-    $(param).click(function() {
+    $(this).click(function() {
         notfound = this;
         closeCB = function() { $(notfound.crit_form).fadeOut("slow", function() { $(this).remove(); notfound.crit_form = null; }); };
         if (this.crit_form) {
