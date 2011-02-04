@@ -5,7 +5,7 @@ from logging import debug, warn, info
 from urllib import URLopener
 
 from google.appengine.ext import db
-from google.appengine.api import users
+from google.appengine.api import users, memcache
 
 from imdb import IMDb
 
@@ -29,8 +29,13 @@ def massage_title(original_title):
 def load_url(url):
     return Opener.open(url).read()
 
-@gaecache()
-def fetch_info(movieID):
+def fetch_info(movieID, fetch):
+    im = memcache.get(movieID, namespace = 'imdb_info')
+    if im:
+        return im
+    if not fetch:
+        return None
+    
     url = MOVIE_URL % movieID
     movie_page = load_url(url)
     title = TITLE_RE.search(movie_page).group(1)
@@ -44,16 +49,25 @@ def fetch_info(movieID):
         'rating': rating,
         'movieID': movieID
     }
+    memcache.set(movieID, im, namespace = 'imdb_info')
     return im
 
-@gaecache()
-def best_guess(title):
+def best_guess(title, fetch):
+    result = memcache.get(title, namespace = 'imdb_title')
+    if result:
+        return result
+    if not fetch:
+        return None
+    
     title = massage_title(title)
     im = ia._search_movie(title, results = 1)
     if im:
-        return im[0][0]
+        result = im[0][0]
     else:
-        return 0
+        result = 0
+    
+    memcache.set(title, result, namespace = 'imdb_title')
+    return result
 
 def massage_imdbid(imdb):
     IMDB_RE = re.compile(r'^((http://)?((www\.)?imdb\.com)?/?title/)?/?(tt)?(\d{7})(/.*|$)')
@@ -214,7 +228,7 @@ class Votes(db.Model):
         self.votes[b] = avotes
         self.imdbs[b] = aimdb
 
-def imdbid_for_movie(movie):
+def imdbid_for_movie(movie, fetch):
     """
         get imdbid for movie.
         returns [authoritative, imdbid], where authoritative is false iff the match was guessed
@@ -243,15 +257,22 @@ def imdbid_for_movie(movie):
         return [True, votes.imdbs[0]]
 
     debug("trying to guess")
-    return [False, best_guess(title)]
+    return [False, best_guess(title, fetch)]
 
 def vote(mid, imdb):
     Vote.register(mid, imdb)
 
-def imdbize(movies):
+def imdbize(movies, fetch = False):
     for m in movies:
-        [authoritative, imdbid] = imdbid_for_movie(m)
+        m['fetch_required'] = False
+        [authoritative, imdbid] = imdbid_for_movie(m, fetch)
+        if imdbid == 0:
+            m['fetch_required'] = True
         if imdbid:
-            m['imdb'] = fetch_info(str(imdbid))
+            imdb = fetch_info(str(imdbid), fetch)
+            if imdb:
+                m['imdb'] = imdb
+            else:
+                m['fetch_required'] = True
         m['imdb_confirmed'] = authoritative
     return movies
