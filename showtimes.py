@@ -11,7 +11,7 @@ from util import get_and_decode
 
 BASE = 'http://www.google.com/movies?hl=en&sort=3&near='
 TITLE_RE = re.compile(r'mid=([^"]*?)">(.*?)</a>(.*?)<p class=clear></div></div>')
-CINEMA_RE = re.compile(r'tid=([0-9a-f]*)"><b dir=ltr>(.*?)</b></a><br>.*?<br>(.*?)</font></td>')
+CINEMA_RE = re.compile(r'tid=([0-9a-f]*)" id=link_1_theater_\d+>(.*?)</a></div><div class=address>.*?<a href="" class=fl target=_top></a></div></div><div class=times>(.*?)</div>')
 NEXT_RE = re.compile(r'<br>Next</a>')
 PLACE_RE = re.compile(r'<h1 id=title_bar>Showtimes for (.*?)</h1>')
 NO_SHOWTIMES = 'No showtimes were found on'
@@ -77,7 +77,6 @@ def find(city):
         return read_enh2009()
     city_enc = city.encode('utf-8')
     result = memcache.get(city_enc, namespace = "showtimes")
-    result = None
     if not result:
         result = do_find(city)
         tz = geonames.timezone(city)
