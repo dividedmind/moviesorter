@@ -72,6 +72,7 @@ class Data(webapp.RequestHandler):
         movie = {'mid': mid, 'title': title}
         debug(movie)
         movie = imdbize([movie], fetch = True)[0]
+        movie['fetch_required'] = False
         self.response.out.write(template.render("movie.html", { 'movie': movie }))
 
 class ImdbSuggest(webapp.RequestHandler):

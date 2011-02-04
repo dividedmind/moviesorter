@@ -34,7 +34,7 @@
         {% endif %}
         </td>
     {% endif %}
-    <td>
+    <td class="showtimes">
         {% for cinema in movie.cinemas %}
             <a href="{{ cinema.link }}" title="{{ cinema.name }}">{{ cinema.name|abbrev }}</a>:
             {% for time in cinema.times %}{{ time }} {% endfor %}
