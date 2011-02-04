@@ -11,45 +11,7 @@
         <th>Showtimes</th>
     </tr>
     {% for movie in movies %}
-        <tr>
-            <td><a href="{{ movie.link }}" class="title mid">{{ movie.title }}</a><br/><span class="real_title">
-                (Full title: <span class="imdb title">{{ movie.imdb.title }}</span>
-                {% if not movie.imdb_confirmed %}
-                    <a href="#" class="imdb_status" title="This full title match has not been confirmed and may not be right.">[☆]</a>{% else %}
-                    <a href="#" class="imdb_status" title="This full title match has been confirmed.">[★]</a>{% endif %})</span></td>
-            <td class="imdb">
-                {% if movie.imdb %}
-                    <a href="http://www.imdb.com/title/tt{{ movie.imdb.movieID }}/">{{ movie.imdb.rating }}</a>
-                {% else %}
-                    <a href="#" onClick="return false;" class="title_needed" title="Cannot fetch imdb data until full title of this movie is known.">[??]</a>
-                {% endif %}
-            </td>
-            {% if user.criticker %}
-                <td class="criticker">
-                {% if movie.criticker %}
-                    {% if movie.synthetic_criticker %}
-                        <a href="#" onClick="return false;" title="This is a synthetic criticker score based on your tiers and IMDb rating. Criticker didn't suggest your score for this movie.">(~{{ movie.synthetic_criticker }})</a>
-                    {% else %}
-                            <a href="http://www.criticker.com/film/{{ movie.criticker.critID }}/">{{ movie.criticker.rating }}</a>
-                    {% endif %}
-                {% endif %}
-                {% if not movie.criticker %}
-                    {% if movie.imdb %}
-                        <a href="#" class="criticker_notfound" title="This is a synthetic criticker score based on your tiers and IMDb rating. This movie was not found on Criticker.">[~{{ movie.synthetic_criticker }}]</a>
-                    {% else %}
-                        <a href="#" onClick="return false;" class="title_needed" title="Cannot fetch criticker data until full title of this movie is known.">[??]</a>
-                    {% endif %}
-                {% endif %}
-                </td>
-            {% endif %}
-            <td>
-                {% for cinema in movie.cinemas %}
-                    <a href="{{ cinema.link }}" title="{{ cinema.name }}">{{ cinema.name|abbrev }}</a>:
-                    {% for time in cinema.times %}{{ time }} {% endfor %}
-                    {% if not forloop.last %}<br/>{% endif %}
-                {% endfor %}
-            </td>
-        </tr>
+        {% include "movie.html" %}
     {% endfor %}
 </table>
 
