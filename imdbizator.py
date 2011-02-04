@@ -2,6 +2,7 @@
 
 import re
 from logging import debug, warn, info
+from urllib import URLopener
 
 from google.appengine.ext import db
 from google.appengine.api import users
@@ -12,13 +13,37 @@ from memoize import gaecache
 
 ia = IMDb(accessSystem = 'mobile')
 
+MOVIE_URL = 'http://m.imdb.com/title/tt%s/'
+TITLE_RE = re.compile(r"<h1>(.*?) \(\d{4}\)</h1>")
+RATING_RE = re.compile(r'<strong>(.*?)</strong>')
+
+class IMDbURLopener(URLopener):
+    version = 'Mozilla/5.0'
+
+Opener = IMDbURLopener()
+
 def massage_title(original_title):
     # hacks, heuristics &c go here
     return re.sub(r'^(.*), The', r'The \1', original_title).strip()
 
+def load_url(url):
+    return Opener.open(url).read()
+
 @gaecache()
 def fetch_info(movieID):
-    im = ia.get_movie(movieID, info = 'main')
+    url = MOVIE_URL % movieID
+    movie_page = load_url(url)
+    title = TITLE_RE.search(movie_page).group(1)
+    if not title:
+        warn("Could not find imdb title for movie id %s" % movieID)
+    rating = float(RATING_RE.search(movie_page).group(1))
+    if not rating:
+        warn("Could not find imdb rating for movie id %s" % movieID)
+    im = {
+        'title': title,
+        'rating': rating,
+        'movieID': movieID
+    }
     return im
 
 @gaecache()
