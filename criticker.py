@@ -232,8 +232,12 @@ def ize(movies, fetch = False):
     session = Session.for_current_user(fetch)
     if not session:
         return movies
-    
-    tiers = session.get_tiers()
+
+    tiers = None
+    try:
+        tiers = session.get_tiers()
+    except RefetchNecessary:
+        pass
 
     for m in movies:
         try:
@@ -244,7 +248,10 @@ def ize(movies, fetch = False):
                 if 'imdb' in m:
                     rating = m['imdb'].get('rating')
                     if rating:
-                        m['synthetic_criticker'] = synthesize(rating, tiers)
+                        if tiers:
+                            m['synthetic_criticker'] = synthesize(rating, tiers)
+                        else:
+                            raise RefetchNecessary()
         except RefetchNecessary:
             m['fetch_required'] = True
 
