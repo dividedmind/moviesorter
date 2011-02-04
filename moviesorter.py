@@ -62,7 +62,7 @@ class Movies(RequestHandler):
             tz = geonames.timezone(city)
             if tz:
                 debug("timezone for " + city + ": "  + unicode(tz) + ", current time:" + unicode(tz.localize(datetime.utcnow())))
-            sts = sort_by_rating(criticker.ize(imdbize(showtimes.find(city)[0:1])))
+            sts = sort_by_rating(criticker.ize(imdbize(showtimes.find(city)[0:2])))
             self.render("movies.html", { 'city': city, 'movies': sts })
             
 class Data(webapp.RequestHandler):

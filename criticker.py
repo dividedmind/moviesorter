@@ -86,14 +86,14 @@ class ImdbCritickerMapping(db.Model):
     critID = db.StringProperty(required = True)
 
     @staticmethod
-    def find(imdb):
+    def find(imdb, fetch):
         debug(imdb)
         mapping = ImdbCritickerMapping.get_by_key_name("imdb:" + imdb['movieID'])
         if mapping:
             debug("returning known imdb to criticker mapping from " + imdb['movieID'] + " to " + mapping.critID)
             return mapping.critID
 
-        if imdb:
+        if fetch and imdb:
             return search_by_imdb(imdb)
 
 class WrongPassword(Exception):
@@ -101,32 +101,34 @@ class WrongPassword(Exception):
 
 PSI_RE = re.compile(r'<font class=\'pti_font\'>(\d{1,3})</font>')
 class Session:
-    def __init__(self, user, passwd):
-        self.agent = br = Browser()
+    def __init__(self, user, passwd, active_session):
         self.user = user
+        self.agent = None
 
-        br.open('http://www.criticker.com/signin.php')
-        br.select_form('signinform')
-        br['si_password'] = passwd
-        br['si_username'] = user
-        res = br.submit().read()
-        try:
-            foo = res.index('index.php')
-        except:
-            raise WrongPassword(user + ":" + passwd)
-        self.flurl = 'http://www.criticker.com/?fl&view=prs'
+        if (active_session):
+            self.agent = br = Browser()
+            br.open('http://www.criticker.com/signin.php')
+            br.select_form('signinform')
+            br['si_password'] = passwd
+            br['si_username'] = user
+            res = br.submit().read()
+            try:
+                foo = res.index('index.php')
+            except:
+                raise WrongPassword(user + ":" + passwd)
+            self.flurl = 'http://www.criticker.com/?fl&view=prs'
 
     @staticmethod
-    def for_current_user():
+    def for_current_user(active_session):
         creds = CritickerCredentials.get_for_current_user()
         if not creds:
             return None
-        return Session(creds.username, creds.password)
+        return Session(creds.username, creds.password, active_session)
 
     def get_data_for_movie(self, movie):
         if not 'imdb' in movie:
             return None
-        critID = ImdbCritickerMapping.find(movie['imdb'])
+        critID = ImdbCritickerMapping.find(movie['imdb'], self.agent != None)
         
         if not critID:
             return None
@@ -134,6 +136,9 @@ class Session:
         result = memcache.get(critID, "criticker:" + self.user)
         if result:
             return result
+        
+        if not self.agent:
+            return None
 
         res = self.agent.open(movie_url(critID)).read()
         match = PSI_RE.search(res)
@@ -149,6 +154,8 @@ class Session:
         tiers = memcache.get("tiers", namespace = "criticker:" + self.user)
         if tiers:
             return tiers
+        if not self.agent:
+            return None
 
         page = 1
         baseurl = self.flurl + "&page="
@@ -216,12 +223,13 @@ def forget_credentials():
     creds = CritickerCredentials.get_for_current_user()
     creds.delete()
 
-def ize(movies):
-    session = Session.for_current_user()
+def ize(movies, fetch = False):
+    session = Session.for_current_user(fetch)
     if not session:
         return movies
-
+    
     tiers = session.get_tiers()
+
     for m in movies:
         m['criticker'] = session.get_data_for_movie(m)
         try:
