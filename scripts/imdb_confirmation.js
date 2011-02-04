@@ -12,19 +12,21 @@ function setupImdbFormCallbacks(the_form, mid, closeCB, guessed)
     imdb_input = the_form.find('input[type=text]');
     the_form.find('input[type=submit]').click(function() {
         imdb = imdb_input.val();
-        $.post("/imdb_suggest", { mid: mid, imdb: imdb });
+        $.post("/imdb_suggest", { mid: mid, imdb: imdb }, function() {
+            refetchData(mid);
+        });
         the_form.html("Thank you!");
         setTimeout(function() { closeCB(); guessed.remove(); }, 666);
     });
 }
 
-$(".imdb_status").each(function(i) {
-    title = $(this).attr("title");
+function setupImdbHandler(param) {
+    var title = $(this).attr("title");
     $(this).attr("title", title + " Please click here to suggest another one or confirm.");
-    td = $(this).parents("td");
-    midref = td.find(".mid").attr("href");
+    var td = $(this).parents("td");
+    var midref = td.find(".mid").attr("href");
     this.mid = midref.replace(/.*mid=(.*)/, '$1');
-    imdbtd = td.next(".imdb");
+    var imdbtd = td.next(".imdb");
     this.imdb = imdbtd.find("a").attr("href");
 
     $(this).click(function() {
@@ -42,4 +44,6 @@ $(".imdb_status").each(function(i) {
         }
         return false;
     });
-});
+}
+
+$(".imdb_status").each(setupImdbHandler);

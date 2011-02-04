@@ -68,8 +68,9 @@ class Movies(RequestHandler):
 class Data(webapp.RequestHandler):
     def get(self):
         mid = self.request.get('mid')
+        city = self.request.get('city')
         title = showtimes.MovieIds.get_title(mid)
-        movie = {'mid': mid, 'title': title}
+        movie = {'mid': mid, 'title': title, 'link': showtimes.city_movie_link(city, mid)}
         debug(movie)
         movie = imdbize([movie], fetch = True)[0]
         movie['fetch_required'] = False

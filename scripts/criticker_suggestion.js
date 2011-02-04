@@ -18,14 +18,14 @@ function setupCritFormCallbacks(the_form, imdb, closeCB, guessed)
     });
 }
 
-$(".criticker_notfound").each(function(i) {
-    title = $(this).attr("title");
-    $(this).attr("title", title + " If you think it's there, click here to suggest an address.");
-    tr = $(this).parents("tr");
+function setupCritickerHandler(param) {
+    title = $(param).attr("title");
+    $(param).attr("title", title + " If you think it's there, click here to suggest an address.");
+    tr = $(param).parents("tr");
     imdbtd = tr.find(".imdb");
-    this.imdb = imdbtd.find("a").attr("href");
+    param.imdb = imdbtd.find("a").attr("href");
 
-    $(this).click(function() {
+    $(param).click(function() {
         notfound = this;
         closeCB = function() { $(notfound.crit_form).fadeOut("slow", function() { $(this).remove(); notfound.crit_form = null; }); };
         if (this.crit_form) {
@@ -40,4 +40,6 @@ $(".criticker_notfound").each(function(i) {
         }
         return false;
     });
-});
+}
+
+$(".criticker_notfound").each(setupCritickerHandler);

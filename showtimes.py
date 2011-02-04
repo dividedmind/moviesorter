@@ -85,6 +85,10 @@ def do_find(city):
 
     return movies
 
+def city_movie_link(city, mid):
+    baseurl = BASE + urllib.quote(city.encode("utf-8"))
+    return movielink(baseurl, mid)
+
 def nearest_midnight(time):
     next_day = time + timedelta(days=1)
     next_day = next_day.replace(hour = 0).replace(minute = 0).replace(second = 0)
