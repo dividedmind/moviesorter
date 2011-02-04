@@ -78,7 +78,7 @@ def search_by_imdb(imdb):
     if ids_to_try == 0:
         return None
     for i in ids_to_try:
-        m = try_match(i, imdb.movieID)
+        m = try_match(i, imdb['movieID'])
         if m:
             return m
 
@@ -87,9 +87,10 @@ class ImdbCritickerMapping(db.Model):
 
     @staticmethod
     def find(imdb):
-        mapping = ImdbCritickerMapping.get_by_key_name("imdb:" + imdb.movieID)
+        debug(imdb)
+        mapping = ImdbCritickerMapping.get_by_key_name("imdb:" + imdb['movieID'])
         if mapping:
-            debug("returning known imdb to criticker mapping from " + imdb.movieID + " to " + mapping.critID)
+            debug("returning known imdb to criticker mapping from " + imdb['movieID'] + " to " + mapping.critID)
             return mapping.critID
 
         if imdb:
