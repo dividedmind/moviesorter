@@ -15,7 +15,8 @@ def find(place):
         url = BASE_URL + urllib.quote(place.encode('utf-8'))
         response = unicode(urllib.urlopen(url).read(), 'utf-8')
         result = simplejson.loads(response)
-        if result['totalResultsCount'] > 0:
+        # TODO: not cache if no 'totalResultsCount'
+        if 'totalResultsCount' in result and result['totalResultsCount'] > 0:
             return result['geonames'][0]
         else:
             # try to fix the placename
