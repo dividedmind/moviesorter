@@ -1,6 +1,9 @@
+<!DOCTYPE html>
 <html>
     <head>
         <title>Movie Sorter</title>
+        <meta charset="utf-8"/>
+        <link href="http://fonts.googleapis.com/css?family=Cuprum" rel="stylesheet" type="text/css">
         <link rel="stylesheet" type="text/css" href="stylesheets/main.css"/>
         <script src="http://www.google.com/jsapi"></script>
         <script>
@@ -12,38 +15,38 @@
     <body>
     <div id="user_info">
         {% if user %}
-            Logged in as {{ user.nickname }}. <a href="{{ logout }}">[Logout]</a>
+            Logged in as {{ user.nickname }}. <a href="{{ logout|escape }}">[Logout]</a>
         {% else %}
-            Not logged in. <a href="{{ login }}">[Login]</a>
+            Not logged in. <a href="{{ login|escape }}">[Login]</a>
         {% endif %}
     </div>
     <h1>movie<span class="verb">sorter</span></h1>
-    <h2>because <a href="http://www.ted.com/talks/barry_schwartz_on_the_paradox_of_choice.html">too much choice can kill you</a></h2>
+    <h2>because <a href="http://www.ted.com/talks/barry_schwartz_on_the_paradox_of_choice.html">too much choice can hurt you</a></h2>
 
     {% block blurb %}
     {% endblock %}
 
     <div id="forms">
         <form action="/movies" method="get">
-            City: <input type="text" id="city" name="city" value="{{ city }}"/>
+            City: <input type="text" id="city" name="city" value="{{ city|escape }}"/>
             <input type="submit" value="Show me movies!"/>
         </form>
         {% if user %}
             <form action="/criticker" method="post">
-                <input type="hidden" name="city" value="{{ city }}"/>
+                <input type="hidden" name="city" value="{{ city|escape }}"/>
                 {% if user.criticker %}
-                    Linked to criticker account: {{ user.criticker }}.
+                    Linked to criticker account: {{ user.criticker|escape }}.
                     <input type="submit" name="unlink" value="Unlink"/>
                 {% else %}
                     Link your criticker account:
-                    {% if criticker_errors %}<div id="criticker_errors"><span>{{ criticker_errors }}</span></div>{% endif %}
+                    {% if criticker_errors %}<div id="criticker_errors"><span>{{ criticker_errors|escape }}</span></div>{% endif %}
                     <input type="text" name="username"/>
                     <input type="password" name="password"/>
                     <input type="submit" value="Ok"/>
                 {% endif %}
             </form>
         {% else %}
-            <a href="{{ login }}">Login</a> to link your <a href="http://www.criticker.com">criticker</a> account.
+            <a href="{{ login|escape }}">Login</a> to link your <a href="http://www.criticker.com">criticker</a> account.
         {% endif %}
     </div>
 

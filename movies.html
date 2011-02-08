@@ -2,7 +2,7 @@
 
 {% block content %}
 <script>
-    var city = "{{ city }}";
+    var city = "{{ city|escape }}";
 </script>
 
 <script src="/scripts/data_puller.js"></script>
