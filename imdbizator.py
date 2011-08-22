@@ -25,7 +25,10 @@ Opener = IMDbURLopener()
 
 def massage_title(original_title):
     # hacks, heuristics &c go here
-    return re.sub(r'^(.*), The', r'The \1', original_title).strip()
+    title = re.sub(r'^(.*), The', r'The \1', original_title)
+    title = re.sub(r' \(projekcje [35]D\)$', '', title)
+    title = re.sub(r' [35]D$', '', title)
+    return title.strip()
 
 def load_url(url):
     return decode_htmlentities(unicode(Opener.open(url).read(), "latin1"))
